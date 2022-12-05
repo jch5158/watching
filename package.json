@@ -1,0 +1,13 @@
+{
+  "name": "watching",
+  "version": "1.0.0",
+  "description": "node.js web server portfolio",
+  "scripts": {
+    "start": "node ./src/server/entry/server.js"
+  },
+  "author": "devhun",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
