@@ -1,5 +1,6 @@
 import "dotenv/config";
 import "./initDB";
+import "../models/User";
 import app from "./server";
 
 // PORT 넘버
