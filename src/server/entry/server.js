@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
+import "./db";
 import rootRouter from "../routers/rootRouter";
 
 const app = express();
