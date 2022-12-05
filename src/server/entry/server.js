@@ -11,8 +11,4 @@ app.set("views", process.cwd() + "/src/client/views");
 app.use(logger);
 app.use("/", rootRouter);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server listening PORT : ${process.env.PORT}`);
-});
-
 export default app;
