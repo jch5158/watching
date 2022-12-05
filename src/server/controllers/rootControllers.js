@@ -1,3 +1,3 @@
 export const home = (req, res) => {
-  res.send("Hello World");
+  res.render("screens/root/home");
 };
