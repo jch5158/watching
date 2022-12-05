@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "node.js web server portfolio",
   "scripts": {
-    "start": "nodemon --exec babel-node ./src/server/entry/server.js"
+    "dev:server": "nodemon --exec babel-node ./src/server/entry/init.js"
   },
   "author": "devhun",
   "license": "ISC",

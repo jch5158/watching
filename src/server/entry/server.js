@@ -1,7 +1,5 @@
-import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
-import "./db";
 import rootRouter from "../routers/rootRouter";
 
 const app = express();
@@ -16,3 +14,5 @@ app.use("/", rootRouter);
 app.listen(process.env.PORT, () => {
   console.log(`Server listening PORT : ${process.env.PORT}`);
 });
+
+export default app;
