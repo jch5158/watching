@@ -1,5 +1,5 @@
 import express from "express";
-import { postEmailAuthenticode } from "../controllers/usersController";
+import { postEmailAuthenticode } from "../controllers/userController";
 
 const apiRouter = express.Router();
 

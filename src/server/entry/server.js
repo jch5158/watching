@@ -2,7 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
-import usersRouter from "../routers/usersRouter";
+import usersRouter from "../routers/userRouter";
 
 const app = express();
 const logger = morgan("dev");
