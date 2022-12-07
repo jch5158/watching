@@ -1,0 +1,7 @@
+// config
+@import "./config/variables";
+@import "./config/reset";
+
+body {
+  background-color: $red;
+}

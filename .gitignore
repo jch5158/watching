@@ -1,6 +1,7 @@
 # folder
 /node_modules
 /uploads
+/assets
 
 # file
 .env

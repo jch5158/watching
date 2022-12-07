@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "node.js web server portfolio",
   "scripts": {
-    "dev:server": "nodemon --exec babel-node ./src/server/entry/init.js"
+    "dev:server": "nodemon",
+    "dev:assets": "webpack --mode=development -w"
   },
   "author": "devhun",
   "license": "ISC",
@@ -16,12 +17,21 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.8.0",
     "nodemailer-pug-engine": "^2.0.1",
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "redis": "^4.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",
     "@babel/node": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
-    "nodemon": "^2.0.20"
+    "babel-loader": "^9.1.0",
+    "css-loader": "^6.7.2",
+    "mini-css-extract-plugin": "^2.7.2",
+    "nodemon": "^2.0.20",
+    "sass": "^1.56.1",
+    "sass-loader": "^13.2.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import "./initDB";
+import "./initRedis";
 import "../models/User";
 import app from "./server";
 

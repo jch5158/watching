@@ -1,6 +1,8 @@
 import User from "../models/User";
 import nodemailer from "nodemailer";
 import { pugEngine } from "nodemailer-pug-engine";
+import { webcrypto } from "crypto";
+import redisClient from "../entry/initRedis";
 
 const transporter = nodemailer.createTransport({
   serviec: "gmail",
@@ -20,17 +22,15 @@ transporter.use(
   })
 );
 
-const data = {
-  from: process.env.SMTP_SERVER_ID,
-  to: process.env.SMTP_SERVER_ID,
-  subject: "subject",
-  template: "mail-authentication",
-  ctx: {
-    code: "good~",
-  },
+const getEmailAuthenticode = () => {
+  const array = webcrypto.getRandomValues(new Uint8Array(6));
+  return array
+    .map((num) => num % 10)
+    .toString()
+    .replaceAll(",", "");
 };
 
-const send = async (data) => {
+const sendEmail = async (data) => {
   await transporter.sendMail(data, function (error, info) {
     if (error) {
       console.log(error);
@@ -47,7 +47,7 @@ const validateName = (name) => {
 };
 
 const validateEmail = (email) => {
-  if (email.length < 5 || email.length > 320) {
+  if (!email || email.length < 5 || email.length > 320) {
     return false;
   }
 
@@ -136,4 +136,29 @@ export const postJoin = async (req, res) => {
   }
 
   return res.redirect("/");
+};
+
+export const postEmailAuthenticode = async (req, res) => {
+  const email = req.body;
+  if (!validateEmail(email)) {
+    return res.sendStatus(400);
+  }
+  const authenticode = getEmailAuthenticode();
+  const data = {
+    to: email,
+    subject: "이메일 인증번호입니다.",
+    template: "mail-authentication",
+    ctx: {
+      code: authenticode,
+    },
+  };
+
+  try {
+    await redisClient.setEx(email, 180, authenticode);
+    sendEmail(data);
+    return res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
 };
