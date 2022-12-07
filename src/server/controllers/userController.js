@@ -76,7 +76,11 @@ const validatePassword = (password, passwordConfirm) => {
   return regExp.test(password);
 };
 
-const validateFile = (file) => {
+const validateImageFile = (file) => {
+  if (!file) {
+    return false;
+  }
+
   if (
     file.mimetype !== "image/jpg" ||
     file.mimetype !== "image/jpeg" ||
@@ -105,7 +109,7 @@ export const postJoin = async (req, res) => {
     !validateEmail(email) ||
     !validateNickname(nickname) ||
     !validatePassword(password, password_confirm) ||
-    !file
+    !validateImageFile(file)
   ) {
     return res.status(400).render(joinTemplate);
   }
