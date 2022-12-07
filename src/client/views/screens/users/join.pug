@@ -4,11 +4,14 @@ block content
     form(method="POST", action="/users/join" enctype="multipart/form-data")
         label(for="avatar") 대표 이미지
         input(type="file", id="avatar", name="avatar", accept="image/jpg, image/jpeg, image/png") 
-        input(name="name", placeholder="이름", type="text", minlength="2", maxlength="20", required)
-        input(name="email", placeholder="E-mail", type="text", minlength="5" maxlength="320" required)
-        input(name="nickname", placeholder="닉네임", type="text", minlength="2", maxlength="15" required)
-        input(name="password", placeholder="비밀번호", type="password", minlength="8", maxlength="15" required)
-        input(name="password_confirm", placeholder="비밀번호 재입력", type="password", minlength="8", maxlength="15" required)
+        input(name="name", placeholder="이름", type="text", minlength="2", maxlength="20")
+        input(name="email", placeholder="E-mail", type="text", minlength="5" maxlength="320")
+        button(type="button") 이메일 인증
+        input(name="certification" placeholder="이메일 인증번호 입력", type="text")
+        button(type="button") 인증 확인
+        input(name="nickname", placeholder="닉네임", type="text", minlength="2", maxlength="15")
+        input(name="password", placeholder="비밀번호", type="password", minlength="8", maxlength="15")
+        input(name="password_confirm", placeholder="비밀번호 재입력", type="password", minlength="8", maxlength="15")
         input(type="submit", value="회원가입")
     div
         span 이미 가입된 아이디가 있으신가요? 
