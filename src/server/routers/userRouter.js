@@ -2,11 +2,11 @@ import express from "express";
 import { getJoin, postJoin } from "../controllers/userController";
 import { uploadAvatarMiddleware } from "../entry/middlewares";
 
-const usersRouter = express.Router();
+const userRouter = express.Router();
 
-usersRouter
+userRouter
   .route("/join")
   .get(getJoin)
   .post(uploadAvatarMiddleware.single("avatar"), postJoin);
 
-export default usersRouter;
+export default userRouter;
