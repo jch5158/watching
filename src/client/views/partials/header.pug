@@ -2,7 +2,8 @@ nav
     ul             
         li
             a(href="/") Home 
-        li
-            a(href="/users/login") Login
-        li
-            a(href="/users/join") Join
+        if !isLoggedIn
+            li
+                a(href="/users/login") Login
+            li
+                a(href="/users/join") Join

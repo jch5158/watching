@@ -1,7 +1,7 @@
 extends ../../templates/main
 
 block content 
-    form(method="POST", action="/user/login")
+    form(method="POST", action="/users/login")
         input(name="email", placeholder="E-mail", type="email", required)
         input(name="password", placeholder="비밀번호", type="password", required)
         input(type="submit", value="Login")

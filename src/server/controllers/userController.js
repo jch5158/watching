@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { pugEngine } from "nodemailer-pug-engine";
 import { webcrypto } from "crypto";
 import redisClient from "../entry/initRedis";
+import bcrypt from "bcrypt";
 
 const transporter = nodemailer.createTransport({
   serviec: "gmail",
@@ -66,11 +67,7 @@ const validateNickname = (nickname) => {
   return regExp.test(nickname);
 };
 
-const validatePassword = (password, passwordConfirm) => {
-  if (password !== passwordConfirm) {
-    return false;
-  }
-
+const validatePassword = (password) => {
   //최소 8자 + 최대 15자 + 최소 한개의 소문자 + 최소 한개의 대문자 + 최소 한개의 숫자 + 최소 한개의 특수 문자
   const regExp =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/;
@@ -125,10 +122,14 @@ export const postJoin = async (req, res) => {
     !validateName(name) ||
     !validateEmail(email) ||
     !validateNickname(nickname) ||
-    !validatePassword(password, password_confirm) ||
+    !validatePassword(password) ||
     !validateImageFile(file) ||
     !validateToken(token)
   ) {
+    return res.status(400).render(joinTemplate);
+  }
+
+  if (password !== password_confirm) {
     return res.status(400).render(joinTemplate);
   }
 
@@ -158,12 +159,12 @@ export const postJoin = async (req, res) => {
       password,
       avatar_url: file.path,
     });
+
+    return res.redirect("/");
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
   }
-
-  return res.redirect("/");
 };
 
 export const postAuthenticode = async (req, res) => {
@@ -215,6 +216,35 @@ export const postConfirmAuthenticode = async (req, res) => {
     await redisClient.setEx(token, 1800, email);
     console.log(token);
     return res.status(200).json({ token });
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+};
+
+export const getLogin = (req, res) => {
+  return res.render("screens/users/login", { pageTitle: "Login" });
+};
+
+export const postLogin = async (req, res) => {
+  const {
+    body: { email, password },
+  } = req;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.sendStatus(400);
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.sendStatus(400);
+    }
+
+    req.session.isLoggedIn = true;
+    req.session.user = user;
+    return res.redirect("/");
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
