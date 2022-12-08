@@ -82,8 +82,8 @@ const validateImageFile = (file) => {
   }
 
   if (
-    file.mimetype !== "image/jpg" ||
-    file.mimetype !== "image/jpeg" ||
+    file.mimetype !== "image/jpg" &&
+    file.mimetype !== "image/jpeg" &&
     file.mimetype !== "image/png"
   ) {
     return false;
