@@ -22,12 +22,14 @@ transporter.use(
   })
 );
 
-const getEmailAuthenticode = () => {
-  const array = webcrypto.getRandomValues(new Uint8Array(6));
-  return array
-    .map((num) => num % 10)
-    .toString()
-    .replaceAll(",", "");
+const getRandToken = (length) => {
+  const array = webcrypto.getRandomValues(new Uint16Array(length));
+  let authenticode = "";
+  for (let i = 0; i < length; ++i) {
+    const number = array[i] % 36;
+    authenticode += number.toString(36);
+  }
+  return authenticode.toUpperCase();
 };
 
 const sendEmail = async (data) => {
@@ -92,6 +94,21 @@ const validateImageFile = (file) => {
   return true;
 };
 
+const validateAuthenticode = (authenticode) => {
+  if (!authenticode || authenticode < 6) {
+    return false;
+  }
+  return true;
+};
+
+const validateToken = (token) => {
+  if (!token || token.length !== 10) {
+    return false;
+  }
+
+  return true;
+};
+
 export const getJoin = (req, res) => {
   res.render("screens/users/join", { pageTitle: "회원가입" });
 };
@@ -100,7 +117,7 @@ export const postJoin = async (req, res) => {
   const joinTemplate = "screens/users/join";
 
   const {
-    body: { name, email, nickname, password, password_confirm },
+    body: { name, email, nickname, password, password_confirm, token },
     file,
   } = req;
 
@@ -109,12 +126,19 @@ export const postJoin = async (req, res) => {
     !validateEmail(email) ||
     !validateNickname(nickname) ||
     !validatePassword(password, password_confirm) ||
-    !validateImageFile(file)
+    !validateImageFile(file) ||
+    !validateToken(token)
   ) {
     return res.status(400).render(joinTemplate);
   }
 
   try {
+    const value = await redisClient.getDel(token);
+    if (!value || email !== value) {
+      // 토큰을 발행받지 못하고 회원가입을 하거나 email이 달라짐
+      return res.status(400).render(joinTemplate);
+    }
+
     const emailExists = await User.exists({ email });
     if (emailExists) {
       // 이메일이 중복됩니다.
@@ -142,12 +166,12 @@ export const postJoin = async (req, res) => {
   return res.redirect("/");
 };
 
-export const postEmailAuthenticode = async (req, res) => {
+export const postAuthenticode = async (req, res) => {
   const email = req.body;
   if (!validateEmail(email)) {
     return res.sendStatus(400);
   }
-  const authenticode = getEmailAuthenticode();
+  const authenticode = getRandToken(6);
   const data = {
     to: email,
     subject: "이메일 인증번호입니다.",
@@ -161,6 +185,36 @@ export const postEmailAuthenticode = async (req, res) => {
     await redisClient.setEx(email, 180, authenticode);
     sendEmail(data);
     return res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+};
+
+export const postConfirmAuthenticode = async (req, res) => {
+  const {
+    body: { email, authenticode },
+  } = req;
+
+  if (!validateEmail(email)) {
+    return res.sendStatus(400);
+  }
+
+  if (!validateAuthenticode(authenticode)) {
+    return res.sendStatus(400);
+  }
+
+  try {
+    const redisAuthenticode = await redisClient.get(email);
+    if (String(authenticode) !== String(redisAuthenticode)) {
+      return res.sendStatus(400);
+    }
+    await redisClient.del(email);
+    const token = getRandToken(10);
+    // 30분
+    await redisClient.setEx(token, 1800, email);
+    console.log(token);
+    return res.status(200).json({ token });
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
