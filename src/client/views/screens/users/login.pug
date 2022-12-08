@@ -1,0 +1,10 @@
+extends ../../templates/main
+
+block content 
+    form(method="POST", action="/user/login")
+        input(name="email", placeholder="E-mail", type="email", required)
+        input(name="password", placeholder="비밀번호", type="password", required)
+        input(type="submit", value="Login")
+    div.auth-switch
+        span 회원이 아니신가요? 
+        a(href="/join") 회원가입 &rarr;

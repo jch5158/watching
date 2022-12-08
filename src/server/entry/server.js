@@ -3,6 +3,7 @@ import morgan from "morgan";
 import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
 import usersRouter from "../routers/userRouter";
+import { error404Middleware } from "./middlewares";
 
 const app = express();
 const logger = morgan("dev");
@@ -19,5 +20,6 @@ app.use("/assets", express.static("assets")); // 브라우저가 assets 폴더�
 app.use("/", rootRouter);
 app.use("/users", usersRouter);
 app.use("/api", apiRouter);
+app.use(error404Middleware);
 
 export default app;
