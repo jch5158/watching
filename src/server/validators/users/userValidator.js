@@ -5,7 +5,7 @@ export const validateName = (name) => {
 };
 
 export const validateEmail = (email) => {
-  if (!email || email.length < 5 || email.length > 320) {
+  if (!email || email.length > 320) {
     return false;
   }
 
