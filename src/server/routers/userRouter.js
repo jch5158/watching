@@ -5,6 +5,7 @@ import {
   postJoin,
   getLogin,
   postLogin,
+  getLogout,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -15,5 +16,6 @@ userRouter
   .post(uploadAvatarMiddleware.single("avatar"), postJoin);
 
 userRouter.route("/login").get(getLogin).post(postLogin);
+userRouter.get("/logout", getLogout);
 
 export default userRouter;
