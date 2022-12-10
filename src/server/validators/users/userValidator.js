@@ -47,7 +47,7 @@ export const validateImageFile = (file) => {
 };
 
 export const validateAuthenticode = (authenticode) => {
-  if (!authenticode || authenticode < 6) {
+  if (!authenticode || authenticode.length !== 6) {
     return false;
   }
   return true;
