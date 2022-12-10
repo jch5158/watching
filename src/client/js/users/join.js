@@ -1,6 +1,6 @@
-const emailInfo = document.querySelector(".login-form__email");
+const emailInput = document.querySelector(".login-form__email");
 const sendCodeBtn = document.querySelector(".login-form__send-code");
-const authenticodeInfo = document.querySelector(".login-form__authenticode");
+const authenticodeInput = document.querySelector(".login-form__authenticode");
 const confirmAuthenticodeBtn = document.querySelector(
   ".login-form__confirm-authenticode"
 );
@@ -26,7 +26,7 @@ const validateAuthenticode = (authenticode) => {
 };
 
 const sendAuthenticode = async () => {
-  const email = emailInfo.value;
+  const email = emailInput.value;
   if (!validateEmail(email)) {
     alert("E-mail 형식이 잘못됐습니다.");
     return;
@@ -44,13 +44,13 @@ const sendAuthenticode = async () => {
 };
 
 const confirmAuthenticode = async () => {
-  const email = emailInfo.value;
+  const email = emailInput.value;
   if (!validateEmail(email)) {
     alert("E-mail 형식이 잘못됐습니다.");
     return;
   }
 
-  const authenticode = authenticodeInfo.value;
+  const authenticode = authenticodeInput.value;
   if (!validateAuthenticode(authenticode)) {
     alert("E-mail code가 잘못됐습니다.");
     return;
