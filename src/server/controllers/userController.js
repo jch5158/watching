@@ -29,9 +29,18 @@ export const getJoin = (req, res) => {
 
 export const postJoin = async (req, res) => {
   const joinTemplate = "screens/users/join";
+  const pageTitle = "회원가입";
 
   const {
-    body: { name, email, nickname, password, password_confirm, token },
+    body: {
+      name,
+      email,
+      nickname,
+      password,
+      password_confirm,
+      authenticode,
+      token,
+    },
     file,
   } = req;
 
@@ -41,32 +50,32 @@ export const postJoin = async (req, res) => {
     !validateNickname(nickname) ||
     !validatePassword(password) ||
     !validateImageFile(file) ||
+    !validateAuthenticode(authenticode) ||
     !validateToken(token)
   ) {
-    return res.status(400).render(joinTemplate);
+    return res.status(400).render(joinTemplate, { pageTitle });
   }
 
   if (password !== password_confirm) {
-    return res.status(400).render(joinTemplate);
+    return res.status(400).render(joinTemplate, { pageTitle });
   }
 
   try {
-    const value = await redisClient.getDel(token);
-    if (!value || email !== value) {
-      // 토큰을 발행받지 못하고 회원가입을 하거나 email이 달라짐
-      return res.status(400).render(joinTemplate);
+    const storedToken = await redisClient.getDel(`${email}/${authenticode}`);
+    if (!storedToken || token !== storedToken) {
+      return res.status(400).render(joinTemplate, { pageTitle });
     }
 
     const emailExists = await User.exists({ email });
     if (emailExists) {
       // 이메일이 중복됩니다.
-      return res.status(400).render(joinTemplate);
+      return res.status(400).render(joinTemplate, { pageTitle });
     }
 
     const nicknameExists = await User.exists({ nickname });
     if (nicknameExists) {
       // 닉네임이 중복됩니다.
-      return res.status(400).render(joinTemplate);
+      return res.status(400).render(joinTemplate, { pageTitle });
     }
 
     await User.create({
@@ -77,7 +86,7 @@ export const postJoin = async (req, res) => {
       avatar_url: file.path,
     });
 
-    return res.redirect("/");
+    return res.redirect("/users/login");
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
@@ -123,8 +132,7 @@ export const postConfirmAuthenticode = async (req, res) => {
     await redisClient.del(email);
     const token = getRandToken(10);
     // 30분
-    await redisClient.setEx(token, 1800, email);
-    console.log(token);
+    await redisClient.setEx(`${email}/${authenticode}`, 1800, token);
     return res.status(200).json({ token });
   } catch (error) {
     console.log(error);
