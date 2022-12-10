@@ -1,0 +1,8 @@
+include ../mixins/flash-message
+
+if messages.success 
+    +flashMessage("success", messages.success)
+else if messages.error 
+    +flashMessage("error", messages.error)
+else if messages.warning
+    +flashMessage("warning", messages.warning)

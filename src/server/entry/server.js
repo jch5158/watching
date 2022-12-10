@@ -1,5 +1,6 @@
 import express from "express";
 import session from "express-session";
+import flash from "express-flash";
 import MongoStore from "connect-mongo";
 import morgan from "morgan";
 import apiRouter from "../routers/apiRouter";
@@ -14,6 +15,7 @@ app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/client/views");
 
 app.use(logger);
+app.use(flash());
 app.use(express.urlencoded({ extended: true })); // from 데이터를 읽기 위한 middleware
 app.use(express.text());
 app.use(express.json());
