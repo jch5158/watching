@@ -1,8 +1,7 @@
 import User from "../models/User";
-import nodemailer from "nodemailer";
-import { pugEngine } from "nodemailer-pug-engine";
 import { webcrypto } from "crypto";
 import redisClient from "../entry/initRedis";
+import { sendAuthenticodeEmail } from "../modules/mailer";
 import bcrypt from "bcrypt";
 import {
   validateName,
@@ -14,24 +13,6 @@ import {
   validateToken,
 } from "../validators/users/userValidator";
 
-const transporter = nodemailer.createTransport({
-  serviec: "gmail",
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_SERVER_ID,
-    pass: process.env.SMTP_SERVER_PASS,
-  },
-});
-
-transporter.use(
-  "compile",
-  pugEngine({
-    templateDir: `${process.cwd()}/src/client/views/screens/mails`,
-  })
-);
-
 const getRandToken = (length) => {
   const array = webcrypto.getRandomValues(new Uint16Array(length));
   let authenticode = "";
@@ -40,16 +21,6 @@ const getRandToken = (length) => {
     authenticode += number.toString(36);
   }
   return authenticode.toUpperCase();
-};
-
-const sendEmail = async (data) => {
-  await transporter.sendMail(data, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      return info.response;
-    }
-  });
 };
 
 export const getJoin = (req, res) => {
@@ -118,19 +89,12 @@ export const postAuthenticode = async (req, res) => {
   if (!validateEmail(email)) {
     return res.sendStatus(400);
   }
+
   const authenticode = getRandToken(6);
-  const data = {
-    to: email,
-    subject: "이메일 인증번호입니다.",
-    template: "mail-authentication",
-    ctx: {
-      code: authenticode,
-    },
-  };
 
   try {
     await redisClient.setEx(email, 180, authenticode);
-    sendEmail(data);
+    await sendAuthenticodeEmail(email, authenticode);
     return res.sendStatus(200);
   } catch (error) {
     console.log(error);
@@ -195,4 +159,12 @@ export const postLogin = async (req, res) => {
     console.log(error);
     return res.sendStatus(500);
   }
+};
+
+export const getLogout = async (req, res) => {
+  req.session.destroy(() => {
+    console.log("파괴 완료");
+  });
+
+  return res.redirect("/");
 };
