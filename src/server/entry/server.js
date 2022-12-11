@@ -1,7 +1,8 @@
 import express from "express";
 import session from "express-session";
+import redisClient from "./initRedis";
+import connectRedis from "connect-redis";
 import flash from "express-flash";
-import MongoStore from "connect-mongo";
 import morgan from "morgan";
 import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
@@ -10,6 +11,7 @@ import { error404Middleware, localsMiddleware } from "./middlewares";
 
 const app = express();
 const logger = morgan("dev");
+const RedisStore = connectRedis(session);
 
 app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/client/views");
@@ -27,8 +29,8 @@ app.use(
     cookie: {
       maxAge: 1296000000,
     },
-    store: MongoStore.create({
-      mongoUrl: process.env.DB_URL,
+    store: new RedisStore({
+      client: redisClient,
     }),
   })
 );

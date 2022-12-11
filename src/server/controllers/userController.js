@@ -15,13 +15,9 @@ import {
 
 const joinTemplate = "screens/users/join";
 const loginTemplate = "screens/users/login";
-const error500Template = "screens/root/500";
 
 const joinTitle = "회원가입";
 const loginTitle = "로그인";
-const error500Title = "500";
-
-const serverErrorMsg = "서버의 문제가 발생되었습니다";
 
 const getRandToken = (length) => {
   const array = webcrypto.getRandomValues(new Uint16Array(length));
@@ -31,6 +27,11 @@ const getRandToken = (length) => {
     authenticode += number.toString(36);
   }
   return authenticode.toUpperCase();
+};
+
+const error500 = (res) => {
+  req.flash("error", "서버의 문제가 발생되었습니다");
+  return res.status(500).render("screens/root/500", { pageTitle: "500" });
 };
 
 export const getJoin = (req, res) => {
@@ -70,14 +71,20 @@ export const postJoin = async (req, res) => {
   }
 
   try {
-    const storedToken = await redisClient.getDel(`${email}/${authenticode}`);
-    if (!storedToken) {
-      req.flash("warning", "회원가입 제한 시간을 초과하였습니다.");
-      return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
-    } else if (token !== storedToken) {
-      req.flash("warning", "입력 정보가 잘못되었습니다.");
-      return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
-    }
+    redisClient.get(`${email}/${authenticode}`, (error, storedToken) => {
+      if (error) {
+        console.log(error);
+        return error500(res);
+      } else {
+        if (!storedToken) {
+          req.flash("warning", "회원가입 제한 시간을 초과하였습니다.");
+          return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
+        } else if (token !== storedToken) {
+          req.flash("warning", "입력 정보가 잘못되었습니다.");
+          return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
+        }
+      }
+    });
 
     const emailExists = await User.exists({ email });
     if (emailExists) {
@@ -101,14 +108,18 @@ export const postJoin = async (req, res) => {
       avatar_url: file.path,
     });
 
+    redisClient.del(`${email}/${authenticode}`, (error, result) => {
+      if (error) {
+        console.log(error);
+        return error500(res);
+      }
+    });
+
     req.flash("success", "회원가입 완료");
     return res.redirect("/users/login");
   } catch (error) {
     console.log(error);
-    req.flash("error", serverErrorMsg);
-    return res
-      .status(500)
-      .render(error500Template, { pageTitle: error500Title });
+    return error500(res);
   }
 };
 
@@ -119,21 +130,17 @@ export const postAuthenticode = async (req, res) => {
   }
 
   const authenticode = getRandToken(6);
-
-  try {
-    await redisClient.setEx(email, 180, authenticode);
-    await sendAuthenticodeEmail(email, authenticode);
-    return res.sendStatus(200);
-  } catch (error) {
-    console.log(error);
-    req.flash("error", serverErrorMsg);
-    return res
-      .status(500)
-      .render(error500Template, { pageTitle: error500Title });
-  }
+  redisClient.setEx(email, 180, authenticode, (error, result) => {
+    if (error) {
+      console.log(error);
+      return error500(res);
+    }
+  });
+  await sendAuthenticodeEmail(email, authenticode);
+  return res.sendStatus(200);
 };
 
-export const postConfirmAuthenticode = async (req, res) => {
+export const postConfirmAuthenticode = (req, res) => {
   const {
     body: { email, authenticode },
   } = req;
@@ -146,22 +153,37 @@ export const postConfirmAuthenticode = async (req, res) => {
     return res.sendStatus(400);
   }
 
-  try {
-    const redisAuthenticode = await redisClient.get(email);
-    if (String(authenticode) !== String(redisAuthenticode)) {
-      return res.sendStatus(400);
+  redisClient.get(email, (error, redisAuthenticode) => {
+    if (error) {
+      console.log(error);
+      return error500(res);
+    } else {
+      if (String(authenticode) !== String(redisAuthenticode)) {
+        return res.sendStatus(400);
+      }
     }
-    await redisClient.del(email);
-    const token = getRandToken(10);
-    await redisClient.setEx(`${email}/${authenticode}`, 1800, token); // 30분
-    return res.status(200).json({ token });
-  } catch (error) {
-    console.log(error);
-    req.flash("error", serverErrorMsg);
-    return res
-      .status(500)
-      .render(error500Template, { pageTitle: error500Title });
-  }
+  });
+
+  redisClient.del(email, (error, result) => {
+    if (error) {
+      console.log(error);
+      return error500(res);
+    }
+  });
+
+  const token = getRandToken(10);
+  redisClient.setEx(
+    `${email}/${authenticode}`,
+    1800,
+    token,
+    (error, result) => {
+      if (error) {
+        console.log(error);
+        return error500(res);
+      }
+    }
+  ); // 30분
+  return res.status(200).json({ token });
 };
 
 export const getLogin = (req, res) => {
@@ -194,9 +216,7 @@ export const postLogin = async (req, res) => {
     return res.redirect("/");
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .render(error500Template, { pageTitle: error500Title });
+    return error500(res);
   }
 };
 
