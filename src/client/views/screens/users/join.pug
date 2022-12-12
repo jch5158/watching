@@ -2,11 +2,14 @@ extends ../../templates/main
 
 block content 
     form(method="POST", action="/users/join" enctype="multipart/form-data").login-form
-        label(for="avatar") 대표 이미지
-        input(type="file", id="avatar", name="avatar", accept="image/jpg, image/jpeg, image/png", required) 
+        div.avatar-upload 
+           label(for="avatar").avatar-upload__label 대표 이미지
+           img(src="/resources/img/base-img.png").avatar-upload__avatar
+        input(type="file", id="avatar", name="avatar", accept="image/jpg, image/jpeg, image/png", required).display-none
         input(name="name", placeholder="이름", type="text", minlength="2", maxlength="20", required)
         input(name="email", placeholder="E-mail", type="text", minlength="5" maxlength="320", required).login-form__email
         button(type="button").login-form__send-code 인증번호 발송
+        span.login-form__authenticode-ttl
         input(name="authenticode" placeholder="이메일 인증번호 입력", type="text", required).login-form__authenticode
         button(type="button").login-form__confirm-authenticode 인증 확인
         input(name="nickname", placeholder="닉네임", type="text", minlength="2", maxlength="15", required)
@@ -14,7 +17,7 @@ block content
         input(name="password_confirm", placeholder="비밀번호 재입력", type="password", minlength="8", maxlength="15", required)
         input(name="token", type="text", minlength="10", maxlength="10").login-form__token.display-none
         input(type="submit", value="회원가입")
-    div
+    div.auth-switch
         span 이미 가입된 아이디가 있으신가요? 
         a(href="/users/login") 로그인 &rarr;
 block scripts 

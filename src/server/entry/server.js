@@ -37,6 +37,7 @@ app.use(
 app.use(localsMiddleware);
 app.use("/uploads", express.static("uploads")); // 브라우저가 upload 폴더에 접근할 수 있도록 등록
 app.use("/assets", express.static("assets")); // 브라우저가 assets 폴더에 접근할 수 있도록 등록
+app.use("/resources", express.static("resources"));
 app.use("/", rootRouter);
 app.use("/users", userRouter);
 app.use("/api", apiRouter);

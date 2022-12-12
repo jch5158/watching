@@ -5,6 +5,8 @@
 // compnents
 @import "./components/footer.scss";
 @import "./components/header.scss";
+@import "./components/forms.scss";
+@import "./components/shared.scss";
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
@@ -14,7 +16,7 @@ body {
 }
 
 .display-none {
-  display: none;
+  display: none !important;
 }
 
 // Defaults
@@ -25,9 +27,8 @@ a {
 
 main {
   width: 100%;
-  height: 100vh;
   margin: 10px auto;
-  margin-top: 50px;
+  margin-top: 30px;
 }
 
 @keyframes goAway {

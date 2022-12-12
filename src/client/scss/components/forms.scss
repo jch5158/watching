@@ -1,0 +1,91 @@
+form {
+  max-width: 450px;
+  margin: 0 auto;
+  &:not(.search__form) {
+    padding: 30px;
+    border-radius: 10px;
+    border: $form-border;
+  }
+}
+
+input:not(input[type="range"]),
+input[type="submit"] {
+  all: unset;
+  padding: 15px 20px;
+  border-radius: 5px;
+  border: $form-border;
+  background-color: rgb(18, 18, 18);
+  margin-bottom: 7px;
+  font-size: 16px;
+  color: white;
+  width: 90%;
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+input[type="submit"] {
+  border-radius: 5px;
+  padding: 15px 20px !important;
+  background-color: white !important;
+  color: black !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  display: block;
+  border: none;
+  &:focus {
+    outline: none;
+  }
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.avatar-upload {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.avatar-upload__avatar {
+  height: 250px;
+  width: 200px;
+  border-radius: 10px;
+}
+
+.avatar-upload__label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  padding: 15px 20px;
+  border-radius: 5px;
+  color: black;
+  width: 100px;
+  height: 20px;
+}
+
+input[type="file"],
+label {
+  cursor: pointer !important;
+}
+
+.login-form__send-code,
+.login-form__confirm-authenticode {
+  all: unset;
+  background-color: white;
+  border-radius: 5px;
+  color: black;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  width: 40%;
+  text-align: center;
+}
+
+.login-form__authenticode-ttl {
+  padding-left: 20px;
+  color: white;
+  font-size: 17px;
+}
