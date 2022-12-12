@@ -73,7 +73,8 @@ label {
 }
 
 .login-form__send-authenticode,
-.login-form__confirm-authenticode {
+.login-form__confirm-authenticode,
+.login-form__confirm-nickname {
   all: unset;
   background-color: white;
   border-radius: 5px;
@@ -82,9 +83,15 @@ label {
   margin-bottom: 20px;
   width: 40%;
   text-align: center;
+  cursor: pointer;
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
-.login-form__authenticode-ttl {
+.login-form__authenticode-ttl,
+.login-form__nickname-result {
   padding-left: 20px;
   color: white;
   font-size: 17px;

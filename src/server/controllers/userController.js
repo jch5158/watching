@@ -170,6 +170,15 @@ export const postConfirmAuthenticode = (req, res) => {
   });
 };
 
+export const postConfirmNickname = async (req, res) => {
+  const { nickname } = req.body;
+  const exists = await User.exists({ nickname });
+  if (exists) {
+    return res.sendStatus(400);
+  }
+  return res.sendStatus(200);
+};
+
 export const getLogin = (req, res) => {
   return res.render(loginTemplate, { pageTitle: loginTitle });
 };

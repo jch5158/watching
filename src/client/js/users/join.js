@@ -9,6 +9,15 @@ const authenticodeTTLspan = document.querySelector(
 const uploadAvatarInput = document.querySelector(".avatar-upload__input");
 const uploadAvatar = document.querySelector(".avatar-upload__avatar");
 
+const nicknameInput = document.querySelector(".login-form__nickname");
+const nicknameConfirmBtn = document.querySelector(
+  ".login-form__confirm-nickname"
+);
+
+const nicknameResultSpan = document.querySelector(
+  ".login-form__nickname-result"
+);
+
 let time = 180;
 let authenticodeTTLInterval;
 let fileUrl;
@@ -38,6 +47,11 @@ const validateAuthenticode = (authenticode) => {
 };
 
 const printAuthenticodeTTL = () => {
+  if (authenticodeTTLInterval) {
+    time = 180;
+    clearInterval(authenticodeTTLInterval);
+  }
+
   authenticodeTTLInterval = setInterval(() => {
     time--;
     const fomrSec = parseInt(time % 60);
@@ -49,6 +63,7 @@ const printAuthenticodeTTL = () => {
       authenticodeTTLspan.innerText = "시간 초과";
       console.log("Asdf");
       time = 180;
+      authenticodeTTLInterval = 0;
     } else {
       authenticodeTTLspan.innerText = `0${min}:${sec}`;
     }
@@ -71,7 +86,12 @@ const sendAuthenticode = async () => {
   });
 
   if (res.status !== 200) {
-    alert("E-mail 인증코드 전송 실패");
+    const { message } = await res.json();
+    if (message) {
+      alert(message);
+    } else {
+      alert("E-mail 인증코드 전송 실패");
+    }
     return;
   }
 
@@ -106,6 +126,11 @@ const confirmAuthenticode = async () => {
     return;
   }
 
+  sendAuthenticodeBtn.disabled = true;
+  confirmAuthenticodeBtn.disabled = true;
+  confirmAuthenticodeBtn.innerText = "인증 완료";
+  clearInterval(authenticodeTTLInterval);
+  authenticodeTTLspan.innerText = "";
   const { token } = await res.json();
   tokenInput.value = token;
   return;
@@ -120,6 +145,30 @@ const changeAvatarImg = (event) => {
   uploadAvatar.src = fileUrl;
 };
 
+const confirmNickname = async () => {
+  const nickname = nicknameInput.value;
+  const regExp = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/;
+  if (!regExp.test(nickname)) {
+    alert("닉네임 형식이 잘못되었습니다.");
+    return;
+  }
+  const res = await fetch("/api/users/confirm-nickname", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ nickname }),
+  });
+
+  if (res.status !== 200) {
+    nicknameResultSpan.innerText = "중복된 닉네임입니다.";
+    return;
+  }
+
+  nicknameResultSpan.innerText = "사용 가능한 닉네임입니다.";
+};
+
 sendAuthenticodeBtn.addEventListener("click", sendAuthenticode);
 confirmAuthenticodeBtn.addEventListener("click", confirmAuthenticode);
 uploadAvatarInput.addEventListener("change", changeAvatarImg);
+nicknameConfirmBtn.addEventListener("click", confirmNickname);

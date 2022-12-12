@@ -4,6 +4,7 @@ import { validateMiddleware } from "../entry/middlewares";
 import {
   postAuthenticode,
   postConfirmAuthenticode,
+  postConfirmNickname,
 } from "../controllers/userController";
 
 const apiRouter = express.Router();
@@ -21,6 +22,17 @@ apiRouter.post(
     validateMiddleware,
   ],
   postConfirmAuthenticode
+);
+apiRouter.post(
+  "/users/confirm-nickname",
+  [
+    body("nickname")
+      .exists()
+      .trim()
+      .matches(/^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/),
+    validateMiddleware,
+  ],
+  postConfirmNickname
 );
 
 export default apiRouter;
