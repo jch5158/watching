@@ -3,15 +3,6 @@ import { webcrypto } from "crypto";
 import redisClient from "../entry/initRedis";
 import { sendAuthenticodeEmail } from "../modules/mailer";
 import bcrypt from "bcrypt";
-import {
-  validateName,
-  validateEmail,
-  validateNickname,
-  validatePassword,
-  validateImageFile,
-  validateAuthenticode,
-  validateToken,
-} from "../validators/users/userValidator";
 
 const joinTemplate = "screens/users/join";
 const loginTemplate = "screens/users/login";
@@ -53,15 +44,12 @@ export const postJoin = async (req, res) => {
   } = req;
 
   if (
-    !validateName(name) ||
-    !validateEmail(email) ||
-    !validateNickname(nickname) ||
-    !validatePassword(password) ||
-    !validateImageFile(file) ||
-    !validateAuthenticode(authenticode) ||
-    !validateToken(token)
+    !file ||
+    (file.mimetype !== "image/jpg" &&
+      file.mimetype !== "image/jpeg" &&
+      file.mimetype !== "image/png")
   ) {
-    req.flash("warning", "입력 정보가 잘못되었습니다.");
+    req.flash("warning", "이미지 파일을 확인해주세요.");
     return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
   }
 
@@ -124,10 +112,7 @@ export const postJoin = async (req, res) => {
 };
 
 export const postAuthenticode = async (req, res) => {
-  const email = req.body;
-  if (!validateEmail(email)) {
-    return res.sendStatus(400);
-  }
+  const { email } = req.body;
 
   const authenticode = getRandToken(6);
   redisClient.setEx(email, 180, authenticode, (error, result) => {
@@ -144,14 +129,6 @@ export const postConfirmAuthenticode = (req, res) => {
   const {
     body: { email, authenticode },
   } = req;
-
-  if (!validateEmail(email)) {
-    return res.sendStatus(400);
-  }
-
-  if (!validateAuthenticode(authenticode)) {
-    return res.sendStatus(400);
-  }
 
   redisClient.get(email, (error, redisAuthenticode) => {
     if (error) {

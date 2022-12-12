@@ -32,9 +32,12 @@ const sendAuthenticode = async () => {
     return;
   }
 
-  const res = await fetch("/api/users/authenticate", {
+  const res = await fetch("/api/users/authenticode", {
     method: "POST",
-    body: email,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
   });
 
   if (res.status !== 200) {

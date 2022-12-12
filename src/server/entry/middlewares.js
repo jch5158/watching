@@ -1,4 +1,5 @@
 import multer from "multer";
+import { validationResult } from "express-validator";
 
 export const localsMiddleware = (req, res, next) => {
   res.locals.isLoggedIn = Boolean(req.session.isLoggedIn);
@@ -16,3 +17,12 @@ export const uploadAvatarMiddleware = multer({
     fileSize: 5242880, // 5MB
   },
 });
+
+export const validateMiddleware = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.sendStatus(400);
+  }
+  return next();
+};
