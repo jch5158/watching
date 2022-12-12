@@ -20,7 +20,7 @@ const getRandToken = (length) => {
   return authenticode.toUpperCase();
 };
 
-const error500 = (res) => {
+const error500 = (req, res) => {
   req.flash("error", "서버의 문제가 발생되었습니다");
   return res.status(500).render("screens/root/500", { pageTitle: "500" });
 };
@@ -29,7 +29,7 @@ export const getJoin = (req, res) => {
   res.render("screens/users/join", { pageTitle: joinTitle });
 };
 
-export const postJoin = async (req, res) => {
+export const postJoin = (req, res) => {
   const {
     body: {
       name,
@@ -58,71 +58,72 @@ export const postJoin = async (req, res) => {
     return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
   }
 
-  try {
-    redisClient.get(`${email}/${authenticode}`, (error, storedToken) => {
-      if (error) {
-        console.log(error);
-        return error500(res);
-      } else {
-        if (!storedToken) {
-          req.flash("warning", "회원가입 제한 시간을 초과하였습니다.");
-          return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
-        } else if (token !== storedToken) {
-          req.flash("warning", "입력 정보가 잘못되었습니다.");
+  redisClient.get(`${email}/${authenticode}`, async (error, storedToken) => {
+    if (error) {
+      console.log(error);
+      return error500(req, res);
+    } else {
+      if (!storedToken) {
+        req.flash("warning", "회원가입 제한 시간을 초과하였습니다.");
+        return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
+      } else if (token !== storedToken) {
+        req.flash("warning", "입력 정보가 잘못되었습니다.");
+        return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
+      }
+
+      try {
+        const emailExists = await User.exists({ email });
+        if (emailExists) {
+          // 이메일이 중복됩니다.
+          req.flash("warning", "사용중인 이메일입니다.");
           return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
         }
-      }
-    });
 
-    const emailExists = await User.exists({ email });
-    if (emailExists) {
-      // 이메일이 중복됩니다.
-      req.flash("warning", "사용중인 이메일입니다.");
-      return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
-    }
+        const nicknameExists = await User.exists({ nickname });
+        if (nicknameExists) {
+          // 닉네임이 중복됩니다.
+          req.flash("warning", "사용중인 닉네임입니다.");
+          return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
+        }
 
-    const nicknameExists = await User.exists({ nickname });
-    if (nicknameExists) {
-      // 닉네임이 중복됩니다.
-      req.flash("warning", "사용중인 닉네임입니다.");
-      return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
-    }
+        await User.create({
+          name,
+          email,
+          nickname,
+          password,
+          avatar_url: file.path,
+        });
 
-    await User.create({
-      name,
-      email,
-      nickname,
-      password,
-      avatar_url: file.path,
-    });
+        redisClient.del(`${email}/${authenticode}`, (error, result) => {
+          if (error) {
+            console.log(error);
+            return error500(req, res);
+          }
 
-    redisClient.del(`${email}/${authenticode}`, (error, result) => {
-      if (error) {
+          req.flash("success", "회원가입 완료");
+          return res.redirect("/users/login");
+        });
+      } catch (error) {
         console.log(error);
-        return error500(res);
+        return error500(req, res);
       }
-    });
-
-    req.flash("success", "회원가입 완료");
-    return res.redirect("/users/login");
-  } catch (error) {
-    console.log(error);
-    return error500(res);
-  }
+    }
+  });
 };
 
-export const postAuthenticode = async (req, res) => {
+export const postAuthenticode = (req, res) => {
   const { email } = req.body;
 
   const authenticode = getRandToken(6);
-  redisClient.setEx(email, 180, authenticode, (error, result) => {
+  redisClient.setEx(email, 180, authenticode, async (error, result) => {
     if (error) {
       console.log(error);
-      return error500(res);
+      return error500(req, res);
     }
+
+    await sendAuthenticodeEmail(email, authenticode);
+    return res.sendStatus(200);
   });
-  await sendAuthenticodeEmail(email, authenticode);
-  return res.sendStatus(200);
 };
 
 export const postConfirmAuthenticode = (req, res) => {
@@ -133,34 +134,35 @@ export const postConfirmAuthenticode = (req, res) => {
   redisClient.get(email, (error, redisAuthenticode) => {
     if (error) {
       console.log(error);
-      return error500(res);
+      return error500(req, res);
     } else {
       if (String(authenticode) !== String(redisAuthenticode)) {
         return res.sendStatus(400);
       }
+
+      redisClient.del(email, (error, result) => {
+        if (error) {
+          console.log(error);
+          return error500(req, res);
+        }
+
+        const token = getRandToken(10);
+        redisClient.setEx(
+          `${email}/${authenticode}`,
+          1800,
+          token,
+          (error, result) => {
+            if (error) {
+              console.log(error);
+              return error500(req, res);
+            }
+
+            return res.status(200).json({ token });
+          }
+        );
+      });
     }
   });
-
-  redisClient.del(email, (error, result) => {
-    if (error) {
-      console.log(error);
-      return error500(res);
-    }
-  });
-
-  const token = getRandToken(10);
-  redisClient.setEx(
-    `${email}/${authenticode}`,
-    1800,
-    token,
-    (error, result) => {
-      if (error) {
-        console.log(error);
-        return error500(res);
-      }
-    }
-  ); // 30분
-  return res.status(200).json({ token });
 };
 
 export const getLogin = (req, res) => {
@@ -193,7 +195,7 @@ export const postLogin = async (req, res) => {
     return res.redirect("/");
   } catch (error) {
     console.log(error);
-    return error500(res);
+    return error500(req, res);
   }
 };
 
