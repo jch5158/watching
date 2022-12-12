@@ -1,6 +1,18 @@
 const emailInput = document.querySelector(".login-form__email");
-const sendCodeBtn = document.querySelector(".login-form__send-code");
+const sendAuthenticodeBtn = document.querySelector(
+  ".login-form__send-authenticode"
+);
 const authenticodeInput = document.querySelector(".login-form__authenticode");
+const authenticodeTTLspan = document.querySelector(
+  ".login-form__authenticode-ttl"
+);
+const uploadAvatarInput = document.querySelector(".avatar-upload__input");
+const uploadAvatar = document.querySelector(".avatar-upload__avatar");
+
+let time = 180;
+let authenticodeTTLInterval;
+let fileUrl;
+
 const confirmAuthenticodeBtn = document.querySelector(
   ".login-form__confirm-authenticode"
 );
@@ -25,6 +37,24 @@ const validateAuthenticode = (authenticode) => {
   return true;
 };
 
+const printAuthenticodeTTL = () => {
+  authenticodeTTLInterval = setInterval(() => {
+    time--;
+    const fomrSec = parseInt(time % 60);
+    const min = parseInt(time / 60);
+    const sec = fomrSec >= 10 ? fomrSec : `0${fomrSec}`;
+
+    if (time < 0) {
+      clearInterval(authenticodeTTLInterval);
+      authenticodeTTLspan.innerText = "시간 초과";
+      console.log("Asdf");
+      time = 180;
+    } else {
+      authenticodeTTLspan.innerText = `0${min}:${sec}`;
+    }
+  }, 1000);
+};
+
 const sendAuthenticode = async () => {
   const email = emailInput.value;
   if (!validateEmail(email)) {
@@ -44,6 +74,10 @@ const sendAuthenticode = async () => {
     alert("E-mail 인증코드 전송 실패");
     return;
   }
+
+  sendAuthenticodeBtn.innerText = "인증번호 재발송";
+  authenticodeTTLspan.innerText = "03:00";
+  printAuthenticodeTTL();
 };
 
 const confirmAuthenticode = async () => {
@@ -77,5 +111,15 @@ const confirmAuthenticode = async () => {
   return;
 };
 
-sendCodeBtn.addEventListener("click", sendAuthenticode);
+const changeAvatarImg = (event) => {
+  if (fileUrl) {
+    URL.revokeObjectURL(fileUrl);
+  }
+  const file = event.target.files[0];
+  fileUrl = URL.createObjectURL(file);
+  uploadAvatar.src = fileUrl;
+};
+
+sendAuthenticodeBtn.addEventListener("click", sendAuthenticode);
 confirmAuthenticodeBtn.addEventListener("click", confirmAuthenticode);
+uploadAvatarInput.addEventListener("change", changeAvatarImg);
