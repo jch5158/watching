@@ -111,8 +111,13 @@ export const postJoin = (req, res) => {
   });
 };
 
-export const postAuthenticode = (req, res) => {
+export const postAuthenticode = async (req, res) => {
   const { email } = req.body;
+
+  const exists = await User.exists({ email });
+  if (exists) {
+    return res.status(400).json({ message: "이미 가입된 E-mail입니다." });
+  }
 
   const authenticode = getRandToken(6);
   redisClient.setEx(email, 180, authenticode, async (error, result) => {
