@@ -128,6 +128,10 @@ const confirmAuthenticode = async () => {
 
   sendAuthenticodeBtn.disabled = true;
   confirmAuthenticodeBtn.disabled = true;
+
+  emailInput.classList.add("disabled");
+  authenticodeInput.classList.add("disabled");
+
   confirmAuthenticodeBtn.innerText = "인증 완료";
   clearInterval(authenticodeTTLInterval);
   authenticodeTTLspan.innerText = "";
