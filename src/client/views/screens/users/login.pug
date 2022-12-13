@@ -5,6 +5,13 @@ block content
         input(name="email", placeholder="E-mail", type="email", required)
         input(name="password", placeholder="비밀번호", type="password", required)
         input(type="submit", value="Login")
+    div.sns-login-container 
+        img(src="/resources/img/sns-login/kakao-login.png").sns-login-container__kakao
+        div.sns-login-container__custom
+            div
+                <i class="fab fa-github"></i>
+            div 
+                span 깃헙 로그인
     div.auth-switch
         span 회원이 아니신가요? 
         a(href="/users/join") 회원가입 &rarr;
