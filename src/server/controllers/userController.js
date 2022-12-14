@@ -3,7 +3,6 @@ import { webcrypto } from "crypto";
 import redisClient from "../entry/initRedis";
 import { sendAuthenticodeEmail } from "../modules/mailer";
 import bcrypt from "bcrypt";
-import fetch from "node-fetch";
 import {
   getKakaoLoginRedirectUri,
   getKakaoAccessToken,
@@ -21,7 +20,10 @@ const loginTemplate = "screens/users/login";
 
 const joinTitle = "회원가입";
 const loginTitle = "로그인";
+
+const joingSuccess = "회원가입 완료";
 const loginSuccess = "로그인 완료";
+const loginFailed = "로그인 실패";
 
 const getRandToken = (length) => {
   const array = webcrypto.getRandomValues(new Uint16Array(length));
@@ -113,7 +115,7 @@ export const postJoin = (req, res) => {
             return error500(req, res);
           }
         });
-        req.flash("success", "회원가입 완료");
+        req.flash("success", joingSuccess);
         return res.redirect("/users/login");
       } catch (error) {
         console.log(error);
@@ -238,13 +240,14 @@ export const getFinishKakaoLogin = async (req, res) => {
   const { code } = req.query;
   const access_token = await getKakaoAccessToken(code);
   if (!access_token) {
-    // Failed
-    return res.redirect("/");
+    req.flash("warning", loginFailed);
+    return res.render(loginTemplate);
   }
 
   const userData = await getKakaoUserData(access_token);
   if (!userData) {
-    return res.redirect("/");
+    req.flash("warning", loginFailed);
+    return res.render(loginTemplate);
   }
 
   const {
@@ -260,9 +263,8 @@ export const getFinishKakaoLogin = async (req, res) => {
     )
   ) {
     // Faild
-    await unlinkKaKaoAccount();
     req.flash("warning", "등록된 이메일이 없습니다.");
-    return res.redirect("/");
+    return res.render(loginTemplate);
   }
 
   try {
@@ -280,13 +282,12 @@ export const getFinishKakaoLogin = async (req, res) => {
 
     req.session.isLoggedIn = true;
     req.session.user = user;
+    req.flash("success", loginSuccess);
+    return res.redirect("/");
   } catch (error) {
     console.log(error);
     return error500(req, res);
   }
-
-  req.flash("success", loginSuccess);
-  return res.redirect("/");
 };
 
 export const getStartGithubLogin = (req, res) => {
@@ -300,19 +301,20 @@ export const getFinishGithubLogin = async (req, res) => {
   try {
     const access_token = await getGithubAccessToken(code);
     if (!access_token) {
-      req.flash("로그인 실패");
-      res.redirect("/users/login");
+      req.flash("warning", loginFailed);
+      return res.render(loginTemplate);
     }
 
     const userData = await getGithubUserData(access_token);
     if (!userData) {
-      res.redirect("/users/login");
+      req.flash("warning", loginFailed);
+      return res.render(loginTemplate);
     }
 
     const emailObj = await getGithubEmailData(access_token);
     if (!emailObj) {
       req.flash("warning", "등록된 이메일이 없습니다.");
-      res.redirect("/users/login");
+      return res.render(loginTemplate);
     }
 
     let user = await User.findOne({ email: emailObj.email });
@@ -328,6 +330,10 @@ export const getFinishGithubLogin = async (req, res) => {
     }
     req.session.isLoggedIn = true;
     req.session.user = user;
+    req.flash("success", loginSuccess);
     return res.redirect("/");
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return error500(req, res);
+  }
 };
