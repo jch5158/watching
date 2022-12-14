@@ -3,12 +3,25 @@ import { webcrypto } from "crypto";
 import redisClient from "../entry/initRedis";
 import { sendAuthenticodeEmail } from "../modules/mailer";
 import bcrypt from "bcrypt";
+import fetch from "node-fetch";
+import {
+  getKakaoLoginRedirectUri,
+  getKakaoAccessToken,
+  getKakaoUserData,
+} from "../modules/kakaoLogin";
+import {
+  getGithubLoginRedirectUri,
+  getGithubAccessToken,
+  getGithubUserData,
+  getGithubEmailData,
+} from "../modules/githubLogin";
 
 const joinTemplate = "screens/users/join";
 const loginTemplate = "screens/users/login";
 
 const joinTitle = "회원가입";
 const loginTitle = "로그인";
+const loginSuccess = "로그인 완료";
 
 const getRandToken = (length) => {
   const array = webcrypto.getRandomValues(new Uint16Array(length));
@@ -99,10 +112,9 @@ export const postJoin = (req, res) => {
             console.log(error);
             return error500(req, res);
           }
-
-          req.flash("success", "회원가입 완료");
-          return res.redirect("/users/login");
         });
+        req.flash("success", "회원가입 완료");
+        return res.redirect("/users/login");
       } catch (error) {
         console.log(error);
         return error500(req, res);
@@ -150,22 +162,21 @@ export const postConfirmAuthenticode = (req, res) => {
           console.log(error);
           return error500(req, res);
         }
-
-        const token = getRandToken(10);
-        redisClient.setEx(
-          `${email}/${authenticode}`,
-          1800,
-          token,
-          (error, result) => {
-            if (error) {
-              console.log(error);
-              return error500(req, res);
-            }
-
-            return res.status(200).json({ token });
-          }
-        );
       });
+
+      const token = getRandToken(10);
+      redisClient.setEx(
+        `${email}/${authenticode}`,
+        1800,
+        token,
+        (error, result) => {
+          if (error) {
+            console.log(error);
+            return error500(req, res);
+          }
+          return res.status(200).json({ token });
+        }
+      );
     }
   });
 };
@@ -205,7 +216,7 @@ export const postLogin = async (req, res) => {
     req.session.isLoggedIn = true;
     req.session.user = user;
 
-    req.flash("success", "로그인 완료");
+    req.flash("success", loginSuccess);
     return res.redirect("/");
   } catch (error) {
     console.log(error);
@@ -216,4 +227,107 @@ export const postLogin = async (req, res) => {
 export const getLogout = async (req, res) => {
   req.session.destroy();
   return res.redirect("/");
+};
+
+export const getStartKakaoLogin = async (req, res) => {
+  const loginUri = getKakaoLoginRedirectUri();
+  return res.redirect(loginUri);
+};
+
+export const getFinishKakaoLogin = async (req, res) => {
+  const { code } = req.query;
+  const access_token = await getKakaoAccessToken(code);
+  if (!access_token) {
+    // Failed
+    return res.redirect("/");
+  }
+
+  const userData = await getKakaoUserData(access_token);
+  if (!userData) {
+    return res.redirect("/");
+  }
+
+  const {
+    kakao_account,
+    kakao_account: { profile },
+  } = userData;
+
+  if (
+    !(
+      kakao_account.has_email &&
+      kakao_account.is_email_valid &&
+      kakao_account.is_email_verified
+    )
+  ) {
+    // Faild
+    await unlinkKaKaoAccount();
+    req.flash("warning", "등록된 이메일이 없습니다.");
+    return res.redirect("/");
+  }
+
+  try {
+    let user = await User.findOne({ email: kakao_account.email });
+    if (!user) {
+      user = await User.create({
+        name: profile.nickname,
+        email: kakao_account.email,
+        nickname: profile.nickname,
+        password: "",
+        sns_account: true,
+        avatar_url: profile.profile_image_url,
+      });
+    }
+
+    req.session.isLoggedIn = true;
+    req.session.user = user;
+  } catch (error) {
+    console.log(error);
+    return error500(req, res);
+  }
+
+  req.flash("success", loginSuccess);
+  return res.redirect("/");
+};
+
+export const getStartGithubLogin = (req, res) => {
+  const loginUri = getGithubLoginRedirectUri();
+  return res.redirect(loginUri);
+};
+
+export const getFinishGithubLogin = async (req, res) => {
+  const { code } = req.query;
+
+  try {
+    const access_token = await getGithubAccessToken(code);
+    if (!access_token) {
+      req.flash("로그인 실패");
+      res.redirect("/users/login");
+    }
+
+    const userData = await getGithubUserData(access_token);
+    if (!userData) {
+      res.redirect("/users/login");
+    }
+
+    const emailObj = await getGithubEmailData(access_token);
+    if (!emailObj) {
+      req.flash("warning", "등록된 이메일이 없습니다.");
+      res.redirect("/users/login");
+    }
+
+    let user = await User.findOne({ email: emailObj.email });
+    if (!user) {
+      user = await User.create({
+        name: userData.name,
+        email: emailObj.email,
+        nickname: userData.login,
+        password: "",
+        sns_account: true,
+        avatar_url: userData.avatar_url,
+      });
+    }
+    req.session.isLoggedIn = true;
+    req.session.user = user;
+    return res.redirect("/");
+  } catch (error) {}
 };

@@ -1,5 +1,5 @@
 import express from "express";
-import { body, check } from "express-validator";
+import { body } from "express-validator";
 import {
   uploadAvatarMiddleware,
   validateMiddleware,
@@ -10,6 +10,10 @@ import {
   getLogin,
   postLogin,
   getLogout,
+  getStartKakaoLogin,
+  getFinishKakaoLogin,
+  getStartGithubLogin,
+  getFinishGithubLogin,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -60,5 +64,11 @@ userRouter
     postLogin
   );
 userRouter.get("/logout", getLogout);
+
+userRouter.get("/kakao/login/start", getStartKakaoLogin);
+userRouter.get("/kakao/login/finish", getFinishKakaoLogin);
+
+userRouter.get("/github/login/start", getStartGithubLogin);
+userRouter.get("/github/login/finish", getFinishGithubLogin);
 
 export default userRouter;

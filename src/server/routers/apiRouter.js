@@ -10,7 +10,7 @@ import {
 const apiRouter = express.Router();
 
 apiRouter.post(
-  "/users/authenticode",
+  "/users/post-authenticode",
   [body("email").exists().trim().isEmail(), validateMiddleware],
   postAuthenticode
 );

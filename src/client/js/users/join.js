@@ -1,3 +1,9 @@
+import {
+  validateEmail,
+  validateNickname,
+  validateAuthenticode,
+} from "../validators/users/userValidator";
+
 const emailInput = document.querySelector(".login-form__email");
 const sendAuthenticodeBtn = document.querySelector(
   ".login-form__send-authenticode"
@@ -18,33 +24,14 @@ const nicknameResultSpan = document.querySelector(
   ".login-form__nickname-result"
 );
 
-let time = 180;
-let authenticodeTTLInterval;
-let fileUrl;
-
 const confirmAuthenticodeBtn = document.querySelector(
   ".login-form__confirm-authenticode"
 );
 const tokenInput = document.querySelector(".login-form__token");
 
-const validateEmail = (email) => {
-  if (!email || email.length < 5 || email.length > 320) {
-    return false;
-  }
-
-  const regExp =
-    /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
-
-  return regExp.test(email);
-};
-
-const validateAuthenticode = (authenticode) => {
-  if (!authenticode || authenticode.length !== 6) {
-    return false;
-  }
-
-  return true;
-};
+let time = 180;
+let authenticodeTTLInterval;
+let fileUrl;
 
 const printAuthenticodeTTL = () => {
   if (authenticodeTTLInterval) {
@@ -77,7 +64,7 @@ const sendAuthenticode = async () => {
     return;
   }
 
-  const res = await fetch("/api/users/authenticode", {
+  const res = await fetch("/api/users/post-authenticode", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -151,11 +138,11 @@ const changeAvatarImg = (event) => {
 
 const confirmNickname = async () => {
   const nickname = nicknameInput.value;
-  const regExp = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/;
-  if (!regExp.test(nickname)) {
+  if (!validateNickname(nickname)) {
     alert("닉네임 형식이 잘못되었습니다.");
     return;
   }
+
   const res = await fetch("/api/users/confirm-nickname", {
     method: "POST",
     headers: {
