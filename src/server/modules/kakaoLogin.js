@@ -48,18 +48,18 @@ export const getKakaoUserData = async (accessToken) => {
   return await res.json();
 };
 
-export const unlinkKaKaoAccount = async (accessToken) => {
-  const apiUrl = "https://kapi.kakao.com/v1/user/unlink";
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  if (res.status !== 200) {
-    return false;
-  }
-  const { id } = await res.json();
-  return id;
-};
+// export const unlinkKaKaoAccount = async (accessToken) => {
+//   const apiUrl = "https://kapi.kakao.com/v1/user/unlink";
+//   const res = await fetch(apiUrl, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+//       Authorization: `Bearer ${accessToken}`,
+//     },
+//   });
+//   if (res.status !== 200) {
+//     return false;
+//   }
+//   const { id } = await res.json();
+//   return id;
+// };
