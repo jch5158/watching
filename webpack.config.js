@@ -6,6 +6,7 @@ module.exports = {
   entry: {
     main: "./src/client/js/main.js",
     "users/join": "./src/client/js/users/join.js",
+    "users/set-nickname": "./src/client/js/users/set-nickname.js",
   },
   output: {
     filename: "js/[name].js", // [name]을 사용해서 output 파일의 이름이 겹치지 않도록 한다.

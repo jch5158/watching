@@ -3,6 +3,7 @@ import { body } from "express-validator";
 import {
   uploadAvatarMiddleware,
   validateMiddleware,
+  alreadySetNicknameMiddleware,
 } from "../entry/middlewares";
 import {
   getJoin,
@@ -14,6 +15,8 @@ import {
   getFinishKakaoLogin,
   getStartGithubLogin,
   getFinishGithubLogin,
+  postSetUserNickname,
+  getSetUserNickname,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -70,5 +73,20 @@ userRouter.get("/kakao/login/finish", getFinishKakaoLogin);
 
 userRouter.get("/github/login/start", getStartGithubLogin);
 userRouter.get("/github/login/finish", getFinishGithubLogin);
+
+userRouter
+  .route("/nickname/set")
+  .all(alreadySetNicknameMiddleware)
+  .get(getSetUserNickname)
+  .post(
+    [
+      body("nickname")
+        .exists()
+        .trim()
+        .matches(/^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/),
+      validateMiddleware,
+    ],
+    postSetUserNickname
+  );
 
 export default userRouter;

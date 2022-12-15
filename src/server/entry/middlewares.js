@@ -26,3 +26,46 @@ export const validateMiddleware = (req, res, next) => {
   }
   return next();
 };
+
+export const alreadySetNicknameMiddleware = (req, res, next) => {
+  const {
+    session: { user },
+  } = req;
+  if (!user) {
+    req.flash("warning", "잘못된 접근입니다.");
+    return res.redirect("/");
+  }
+
+  const { nickname } = user;
+  if (nickname) {
+    req.flash("warning", "잘못된 접근입니다.");
+    return res.redirect("/");
+  }
+
+  return next();
+};
+
+export const setNicknameMiddleware = (req, res, next) => {
+  const {
+    session: { user },
+  } = req;
+  if (!user) {
+    return next();
+  }
+
+  if (
+    req.path === "/users/logout" ||
+    req.path === "/users/nickname/set" ||
+    req.path === "/api/users/confirm-nickname"
+  ) {
+    return next();
+  }
+
+  console.log(req.session);
+  const { nickname } = user;
+  if (!nickname) {
+    req.flash("warning", "닉네임을 설정해주세요");
+    return res.redirect("/users/nickname/set");
+  }
+  return next();
+};

@@ -1,0 +1,11 @@
+extends ../../templates/main
+
+block content 
+    span.set-nickname-title 닉네임을 설정해 주세요
+    form(action="").set-nickname-container 
+        input(name="nickname", placeholder="닉네임", type="text", minlength="2", maxlength="15", required).login-form__nickname
+        button(type="button").login-form__confirm-nickname 닉네임 중복확인
+        span.login-form__nickname-result
+        input(type="submit", value="닉네임 변경")
+block scripts 
+    script(src="/assets/js/users/set-nickname.js") 

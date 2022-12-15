@@ -7,7 +7,11 @@ import morgan from "morgan";
 import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
 import userRouter from "../routers/userRouter";
-import { error404Middleware, localsMiddleware } from "./middlewares";
+import {
+  error404Middleware,
+  localsMiddleware,
+  setNicknameMiddleware,
+} from "./middlewares";
 
 const app = express();
 const logger = morgan("dev");
@@ -31,6 +35,7 @@ app.use(
     },
     store: new RedisStore({
       client: redisClient,
+      prefix: "session:",
     }),
   })
 );
@@ -38,6 +43,8 @@ app.use(localsMiddleware);
 app.use("/uploads", express.static("uploads")); // 브라우저가 upload 폴더에 접근할 수 있도록 등록
 app.use("/assets", express.static("assets")); // 브라우저가 assets 폴더에 접근할 수 있도록 등록
 app.use("/resources", express.static("resources"));
+
+app.use(setNicknameMiddleware);
 app.use("/", rootRouter);
 app.use("/users", userRouter);
 app.use("/api", apiRouter);

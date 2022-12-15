@@ -238,51 +238,62 @@ export const getStartKakaoLogin = async (req, res) => {
 
 export const getFinishKakaoLogin = async (req, res) => {
   const { code } = req.query;
-  const access_token = await getKakaoAccessToken(code);
-  if (!access_token) {
-    req.flash("warning", loginFailed);
-    return res.render(loginTemplate);
-  }
-
-  const userData = await getKakaoUserData(access_token);
-  if (!userData) {
-    req.flash("warning", loginFailed);
-    return res.render(loginTemplate);
-  }
-
-  const {
-    kakao_account,
-    kakao_account: { profile },
-  } = userData;
-
-  if (
-    !(
-      kakao_account.has_email &&
-      kakao_account.is_email_valid &&
-      kakao_account.is_email_verified
-    )
-  ) {
-    // Faild
-    req.flash("warning", "등록된 이메일이 없습니다.");
-    return res.render(loginTemplate);
-  }
 
   try {
+    const access_token = await getKakaoAccessToken(code);
+    if (!access_token) {
+      req.flash("warning", loginFailed);
+      return res.render(loginTemplate);
+    }
+
+    const userData = await getKakaoUserData(access_token);
+    if (!userData) {
+      req.flash("warning", loginFailed);
+      return res.render(loginTemplate);
+    }
+
+    const {
+      kakao_account,
+      kakao_account: { profile },
+    } = userData;
+
+    if (
+      !(
+        kakao_account.has_email &&
+        kakao_account.is_email_valid &&
+        kakao_account.is_email_verified
+      )
+    ) {
+      // Faild
+      req.flash("warning", "등록된 이메일이 없습니다.");
+      return res.render(loginTemplate);
+    }
+
+    let isOverlapNickname = true;
     let user = await User.findOne({ email: kakao_account.email });
     if (!user) {
+      let nickname = "";
+      user = await User.findOne({ nickname: profile.nickname });
+      if (!user) {
+        isOverlapNickname = false;
+        nickname = profile.nickname;
+      }
       user = await User.create({
         name: profile.nickname,
         email: kakao_account.email,
-        nickname: profile.nickname,
+        nickname,
         password: "",
         sns_account: true,
         avatar_url: profile.profile_image_url,
       });
+      console.log(user);
     }
 
     req.session.isLoggedIn = true;
     req.session.user = user;
-    req.flash("success", loginSuccess);
+    if (!isOverlapNickname) {
+      req.flash("success", loginSuccess);
+    }
     return res.redirect("/");
   } catch (error) {
     console.log(error);
@@ -317,21 +328,62 @@ export const getFinishGithubLogin = async (req, res) => {
       return res.render(loginTemplate);
     }
 
+    let isOverlapNickname = true;
     let user = await User.findOne({ email: emailObj.email });
     if (!user) {
+      let nickname = "";
+      user = await User.findOne({ nickname: userData.login });
+      if (!user) {
+        isOverlapNickname = false;
+        nickname = userData.login;
+      }
       user = await User.create({
         name: userData.name,
         email: emailObj.email,
-        nickname: userData.login,
+        nickname,
         password: "",
         sns_account: true,
         avatar_url: userData.avatar_url,
       });
     }
+
     req.session.isLoggedIn = true;
     req.session.user = user;
-    req.flash("success", loginSuccess);
+    if (!isOverlapNickname) {
+      req.flash("success", loginSuccess);
+    }
     return res.redirect("/");
+  } catch (error) {
+    console.log(error);
+    return error500(req, res);
+  }
+};
+
+export const getSetUserNickname = async (req, res) => {
+  return res.render("screens/users/set-nickname", {
+    pageTitle: "닉네임 설정",
+  });
+};
+
+export const postSetUserNickname = async (req, res) => {
+  const {
+    session: {
+      user: { _id },
+    },
+    body: { nickname },
+  } = req;
+
+  try {
+    const exists = await User.exists({ nickname });
+    if (exists) {
+      return res.sendStatus(400);
+    }
+    req.session.user = await User.findByIdAndUpdate(
+      _id,
+      { nickname },
+      { new: true }
+    );
+    return res.sendStatus(200);
   } catch (error) {
     console.log(error);
     return error500(req, res);

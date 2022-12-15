@@ -9,8 +9,8 @@ form {
 }
 
 .disabled {
-  opacity: 0.5;
-  pointer-events: none;
+  opacity: 0.5 !important;
+  pointer-events: none !important;
 }
 
 input:not(input[type="range"]),
@@ -21,7 +21,8 @@ input[type="submit"] {
   border: $form-border;
   background-color: rgb(18, 18, 18);
   margin-bottom: 7px;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
   color: white;
   width: 90%;
   &::placeholder {
@@ -89,6 +90,8 @@ label {
   width: 40%;
   text-align: center;
   cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
   &:disabled {
     opacity: 0.5;
     pointer-events: none;
