@@ -24,7 +24,8 @@
     "nodemailer": "^6.8.0",
     "nodemailer-pug-engine": "^2.0.1",
     "pug": "^3.0.2",
-    "redis": "^4.5.1"
+    "redis": "^4.5.1",
+    "regenerator-runtime": "^0.13.11"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",

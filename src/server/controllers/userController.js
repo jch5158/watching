@@ -365,7 +365,7 @@ export const getSetUserNickname = async (req, res) => {
   });
 };
 
-export const postSetUserNickname = async (req, res) => {
+export const putNickname = async (req, res) => {
   const {
     session: {
       user: { _id },

@@ -2,7 +2,7 @@ import {
   validateEmail,
   validateNickname,
   validateAuthenticode,
-} from "../validators/users/userValidator";
+} from "../validators/userValidator";
 
 const emailInput = document.querySelector(".login-form__email");
 const sendAuthenticodeBtn = document.querySelector(

@@ -33,13 +33,13 @@ export const alreadySetNicknameMiddleware = (req, res, next) => {
   } = req;
   if (!user) {
     req.flash("warning", "잘못된 접근입니다.");
-    return res.redirect("/");
+    return res.status(400).redirect("/");
   }
 
   const { nickname } = user;
   if (nickname) {
     req.flash("warning", "잘못된 접근입니다.");
-    return res.redirect("/");
+    return res.status(400).redirect("/");
   }
 
   return next();
@@ -55,17 +55,16 @@ export const setNicknameMiddleware = (req, res, next) => {
 
   if (
     req.path === "/users/logout" ||
-    req.path === "/users/nickname/set" ||
-    req.path === "/api/users/confirm-nickname"
+    req.path === "/users/nickname" ||
+    req.path === "/api/users/nickname"
   ) {
     return next();
   }
 
-  console.log(req.session);
   const { nickname } = user;
   if (!nickname) {
     req.flash("warning", "닉네임을 설정해주세요");
-    return res.redirect("/users/nickname/set");
+    return res.redirect("/users/nickname");
   }
   return next();
 };

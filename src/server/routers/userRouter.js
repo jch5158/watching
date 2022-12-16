@@ -15,7 +15,7 @@ import {
   getFinishKakaoLogin,
   getStartGithubLogin,
   getFinishGithubLogin,
-  postSetUserNickname,
+  putNickname,
   getSetUserNickname,
 } from "../controllers/userController";
 
@@ -75,18 +75,8 @@ userRouter.get("/github/login/start", getStartGithubLogin);
 userRouter.get("/github/login/finish", getFinishGithubLogin);
 
 userRouter
-  .route("/nickname/set")
+  .route("/nickname")
   .all(alreadySetNicknameMiddleware)
-  .get(getSetUserNickname)
-  .post(
-    [
-      body("nickname")
-        .exists()
-        .trim()
-        .matches(/^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/),
-      validateMiddleware,
-    ],
-    postSetUserNickname
-  );
+  .get(getSetUserNickname);
 
 export default userRouter;

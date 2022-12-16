@@ -7,6 +7,8 @@ module.exports = {
     main: "./src/client/js/main.js",
     "users/join": "./src/client/js/users/join.js",
     "users/set-nickname": "./src/client/js/users/set-nickname.js",
+    "modules/users": "./src/client/js/modules/users.js",
+    "validators/userValidator": "./src/client/js/validators/userValidator.js",
   },
   output: {
     filename: "js/[name].js", // [name]을 사용해서 output 파일의 이름이 겹치지 않도록 한다.
