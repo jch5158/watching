@@ -15,7 +15,6 @@ import {
   getFinishKakaoLogin,
   getStartGithubLogin,
   getFinishGithubLogin,
-  putNickname,
   getSetUserNickname,
 } from "../controllers/userController";
 
@@ -25,7 +24,7 @@ userRouter
   .route("/join")
   .get(getJoin)
   .post(
-    uploadAvatarMiddleware.single("avatar"),
+    uploadAvatarMiddleware,
     [
       body("name")
         .exists()

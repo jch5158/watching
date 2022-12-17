@@ -5,10 +5,10 @@ block content
         div.avatar-upload 
            label(for="avatar").avatar-upload__label 대표 이미지
            img(src="/resources/img/users/base-img.png").avatar-upload__avatar
-           input(type="file", id="avatar", name="avatar", accept="image/jpg, image/jpeg, image/png", required).avatar-upload__input.login_.display-none
+           input(type="file", id="avatar", name="avatar", accept="image/jpg, image/jpeg, image/png").avatar-upload__input.login_.display-none
         input(name="name", placeholder="이름", type="text", minlength="2", maxlength="20", required)
         input(name="email", placeholder="E-mail", type="text", minlength="5" maxlength="320", required).login-form__email
-        button(type="button").login-form__send-authenticode 인증번호 발송
+        button(type="button").login-form__req-authenticode 인증번호 발송
         span.login-form__authenticode-ttl
         input(name="authenticode" placeholder="이메일 인증번호 입력", type="text", required).login-form__authenticode
         button(type="button").login-form__confirm-authenticode 인증 확인

@@ -31,12 +31,12 @@ const confirmNicknameHandler = async () => {
 const setNicknameHandler = async (event) => {
   event.preventDefault();
   const nickname = nicknameInput.value;
-  // if (!validateNickname(nickname)) {
-  //   alert("닉네임 형식이 잘못되었습니다.");
-  //   return;
-  // }
+  if (!validateNickname(nickname)) {
+    alert("닉네임 형식이 잘못되었습니다.");
+    return;
+  }
 
-  const status = setNickname(nickname);
+  const status = await setNickname(nickname);
   if (status !== 200) {
     alert("닉네임 설정이 불가합니다.");
     return;

@@ -1,33 +1,32 @@
 import express from "express";
-import { body } from "express-validator";
+import { body, query } from "express-validator";
 import {
   validateMiddleware,
   alreadySetNicknameMiddleware,
 } from "../entry/middlewares";
 import {
-  postAuthenticode,
-  postConfirmAuthenticode,
+  sendAuthenticodeByEmail,
+  confirmAuthenticode,
   postConfirmNickname,
   putNickname,
 } from "../controllers/userController";
 
 const apiRouter = express.Router();
 
-apiRouter.post(
-  "/users/post-authenticode",
-  [body("email").exists().trim().isEmail(), validateMiddleware],
-  postAuthenticode
-);
-
-apiRouter.post(
-  "/users/confirm-authenticode",
-  [
-    body("email").exists().trim().isEmail(),
-    body("authenticode").exists().trim().isLength(6),
-    validateMiddleware,
-  ],
-  postConfirmAuthenticode
-);
+apiRouter
+  .route("/users/email/authenticode")
+  .get(
+    [query("email").exists().trim().isEmail(), validateMiddleware],
+    sendAuthenticodeByEmail
+  )
+  .post(
+    [
+      body("email").exists().trim().isEmail(),
+      body("authenticode").exists().trim().isLength(6),
+      validateMiddleware,
+    ],
+    confirmAuthenticode
+  );
 
 apiRouter
   .route("/users/nickname")

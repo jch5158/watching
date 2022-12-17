@@ -3,10 +3,15 @@ import {
   validateNickname,
   validateAuthenticode,
 } from "../validators/userValidator";
+import {
+  confirmNickname,
+  requestAuthenticode,
+  confirmAuthenticode,
+} from "../modules/users";
 
 const emailInput = document.querySelector(".login-form__email");
-const sendAuthenticodeBtn = document.querySelector(
-  ".login-form__send-authenticode"
+const reqAuthenticodeBtn = document.querySelector(
+  ".login-form__req-authenticode"
 );
 const authenticodeInput = document.querySelector(".login-form__authenticode");
 const authenticodeTTLspan = document.querySelector(
@@ -57,37 +62,26 @@ const printAuthenticodeTTL = () => {
   }, 1000);
 };
 
-const sendAuthenticode = async () => {
+const reqAuthenticodeHandler = async () => {
   const email = emailInput.value;
   if (!validateEmail(email)) {
     alert("E-mail 형식이 잘못됐습니다.");
     return;
   }
 
-  const res = await fetch("/api/users/post-authenticode", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  });
-
-  if (res.status !== 200) {
-    const { message } = await res.json();
-    if (message) {
-      alert(message);
-    } else {
-      alert("E-mail 인증코드 전송 실패");
-    }
+  const status = await requestAuthenticode(email);
+  if (status !== 200) {
+    alert("E-mail 인증코드 전송 실패");
     return;
   }
 
-  sendAuthenticodeBtn.innerText = "인증번호 재발송";
+  alert("인증코드가 전송되었습니다.");
+  reqAuthenticodeBtn.innerText = "인증번호 재발송";
   authenticodeTTLspan.innerText = "03:00";
   printAuthenticodeTTL();
 };
 
-const confirmAuthenticode = async () => {
+const confirmAuthenticodeHandler = async () => {
   const email = emailInput.value;
   if (!validateEmail(email)) {
     alert("E-mail 형식이 잘못됐습니다.");
@@ -100,20 +94,13 @@ const confirmAuthenticode = async () => {
     return;
   }
 
-  const res = await fetch("/api/users/confirm-authenticode", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, authenticode }),
-  });
-
+  const res = await confirmAuthenticode(email, authenticode);
   if (res.status !== 200) {
     alert("E-mail 인증 실패");
     return;
   }
 
-  sendAuthenticodeBtn.disabled = true;
+  reqAuthenticodeBtn.disabled = true;
   confirmAuthenticodeBtn.disabled = true;
 
   emailInput.classList.add("disabled");
@@ -127,7 +114,7 @@ const confirmAuthenticode = async () => {
   return;
 };
 
-const changeAvatarImg = (event) => {
+const changeAvatarImgHandler = (event) => {
   if (fileUrl) {
     URL.revokeObjectURL(fileUrl);
   }
@@ -136,22 +123,15 @@ const changeAvatarImg = (event) => {
   uploadAvatar.src = fileUrl;
 };
 
-const confirmNickname = async () => {
+const confirmNicknameHandler = async () => {
   const nickname = nicknameInput.value;
   if (!validateNickname(nickname)) {
     alert("닉네임 형식이 잘못되었습니다.");
     return;
   }
 
-  const res = await fetch("/api/users/confirm-nickname", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ nickname }),
-  });
-
-  if (res.status !== 200) {
+  const status = await confirmNickname(nickname);
+  if (status !== 200) {
     nicknameResultSpan.innerText = "중복된 닉네임입니다.";
     return;
   }
@@ -159,7 +139,7 @@ const confirmNickname = async () => {
   nicknameResultSpan.innerText = "사용 가능한 닉네임입니다.";
 };
 
-sendAuthenticodeBtn.addEventListener("click", sendAuthenticode);
-confirmAuthenticodeBtn.addEventListener("click", confirmAuthenticode);
-uploadAvatarInput.addEventListener("change", changeAvatarImg);
-nicknameConfirmBtn.addEventListener("click", confirmNickname);
+reqAuthenticodeBtn.addEventListener("click", reqAuthenticodeHandler);
+confirmAuthenticodeBtn.addEventListener("click", confirmAuthenticodeHandler);
+uploadAvatarInput.addEventListener("change", changeAvatarImgHandler);
+nicknameConfirmBtn.addEventListener("click", confirmNicknameHandler);

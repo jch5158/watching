@@ -2,6 +2,7 @@ import User from "../models/User";
 import { webcrypto } from "crypto";
 import redisClient from "../entry/initRedis";
 import { sendAuthenticodeEmail } from "../modules/mailer";
+import { uploadAvatarMiddleware } from "../entry/middlewares";
 import bcrypt from "bcrypt";
 import {
   getKakaoLoginRedirectUri,
@@ -45,6 +46,11 @@ export const getJoin = (req, res) => {
 };
 
 export const postJoin = (req, res) => {
+  if (!req.fileValidate || req.fileInvalidateMsg) {
+    req.flash("warning", req.fileInvalidateMsg);
+    return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
+  }
+
   const {
     body: {
       name,
@@ -55,18 +61,8 @@ export const postJoin = (req, res) => {
       authenticode,
       token,
     },
-    file,
+    file: { path },
   } = req;
-
-  if (
-    !file ||
-    (file.mimetype !== "image/jpg" &&
-      file.mimetype !== "image/jpeg" &&
-      file.mimetype !== "image/png")
-  ) {
-    req.flash("warning", "이미지 파일을 확인해주세요.");
-    return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
-  }
 
   if (password !== password_confirm) {
     req.flash("warning", "패스워드가 일치하지 않습니다.");
@@ -106,7 +102,7 @@ export const postJoin = (req, res) => {
           email,
           nickname,
           password,
-          avatar_url: file.path,
+          avatar_url: path,
         });
 
         redisClient.del(`${email}/${authenticode}`, (error, result) => {
@@ -125,27 +121,24 @@ export const postJoin = (req, res) => {
   });
 };
 
-export const postAuthenticode = async (req, res) => {
-  const { email } = req.body;
-
+export const sendAuthenticodeByEmail = async (req, res) => {
+  const { email } = req.query;
   const exists = await User.exists({ email });
   if (exists) {
-    return res.status(400).json({ message: "이미 가입된 E-mail입니다." });
+    return res.sendStatus(400);
   }
-
   const authenticode = getRandToken(6);
   redisClient.setEx(email, 180, authenticode, async (error, result) => {
     if (error) {
       console.log(error);
-      return error500(req, res);
+      return res.sendStatus(500);
     }
-
     await sendAuthenticodeEmail(email, authenticode);
     return res.sendStatus(200);
   });
 };
 
-export const postConfirmAuthenticode = (req, res) => {
+export const confirmAuthenticode = (req, res) => {
   const {
     body: { email, authenticode },
   } = req;
