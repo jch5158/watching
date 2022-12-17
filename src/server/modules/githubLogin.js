@@ -15,7 +15,7 @@ export const getGithubAccessToken = async (code) => {
   const config = {
     client_id: process.env.GH_CLIENT_ID,
     client_secret: process.env.GH_CLIENT_SECRET,
-    code: code,
+    code,
   };
   const params = new URLSearchParams(config).toString();
   const finalUri = `${baseUrl}?${params}`;
