@@ -15,8 +15,10 @@ block content
         input(name="nickname", placeholder="닉네임", type="text", minlength="2", maxlength="15", required).login-form__nickname
         button(type="button").login-form__confirm-nickname 닉네임 중복확인
         span.login-form__nickname-result
-        input(name="password", placeholder="비밀번호", type="password", minlength="8", maxlength="15", required)
-        input(name="password_confirm", placeholder="비밀번호 재입력", type="password", minlength="8", maxlength="15", required)
+        span.login-form__pass-format 비밀번호 형식이 잘못되었습니다.
+        input(name="password", placeholder="비밀번호 (8~15자, 대소문자, 숫자, 특수문자 조합)", type="password", minlength="8", maxlength="15", required).login-form__pass
+        span.login-form__pass-result 패스워드가 일치하지 않습니다.
+        input(name="password_confirm", placeholder="비밀번호 재입력", type="password", minlength="8", maxlength="15", required).login-form__confirm-pass
         input(name="token", type="text", minlength="10", maxlength="10").login-form__token.display-none
         input(type="submit", value="회원가입")
     div.auth-switch

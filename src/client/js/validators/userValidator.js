@@ -11,17 +11,18 @@ export const validateEmail = (email) => {
 
 export const validateNickname = (nickname) => {
   const regExp = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/;
-  if (!regExp.test(nickname)) {
-    return false;
-  }
-
-  return true;
+  return regExp.test(nickname);
 };
 
 export const validateAuthenticode = (authenticode) => {
   if (!authenticode || authenticode.length !== 6) {
     return false;
   }
-
   return true;
+};
+
+export const validatePassword = (pass) => {
+  const regExp =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/;
+  return regExp.test(pass);
 };
