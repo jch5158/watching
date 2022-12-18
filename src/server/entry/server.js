@@ -8,9 +8,10 @@ import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
 import userRouter from "../routers/userRouter";
 import {
-  error404Middleware,
   localsMiddleware,
   setNicknameMiddleware,
+  error404Middleware,
+  error500Middleware,
 } from "./middlewares";
 
 const app = express();
@@ -51,20 +52,7 @@ app.use(setNicknameMiddleware);
 app.use("/", rootRouter);
 app.use("/users", userRouter);
 app.use("/api", apiRouter);
-app.use((err, req, res, next) => {
-  console.log(err);
-  return res.render("screens/root/error", {
-    pageTitle: 500,
-    status: 500,
-    message: "일시적으로 서버의 문제가 발생되었습니다.",
-  });
-});
-app.use((req, res, next) => {
-  return res.render("screens/root/404", {
-    pageTitle: 404,
-    status: 404,
-    message: "페이지를 찾을 수 없습니다.",
-  });
-});
+app.use(error500Middleware);
+app.use(error404Middleware);
 
 export default app;

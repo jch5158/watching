@@ -8,10 +8,19 @@ export const localsMiddleware = (req, res, next) => {
 };
 
 export const error404Middleware = (req, res, next) => {
-  return res.render("screens/root/404", {
+  return res.render("screens/root/error", {
     pageTitle: 404,
     status: 404,
     message: "페이지를 찾을 수 없습니다.",
+  });
+};
+
+export const error500Middleware = (err, req, res, next) => {
+  console.log(err);
+  return res.render("screens/root/error", {
+    pageTitle: 500,
+    status: 500,
+    message: "일시적으로 서버의 문제가 발생되었습니다.",
   });
 };
 
