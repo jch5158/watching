@@ -10,7 +10,7 @@ block content
         input(name="email", placeholder="E-mail", type="text", minlength="5" maxlength="320", required).login-form__email
         button(type="button").login-form__req-authenticode 인증번호 발송
         span.login-form__authenticode-ttl
-        input(name="authenticode" placeholder="이메일 인증번호 입력", type="text", required).login-form__authenticode
+        input(name="authenticode" placeholder="이메일 인증번호 입력", type="text",minlength="6", maxlength="6", required).login-form__authenticode
         button(type="button").login-form__confirm-authenticode 인증 확인
         input(name="nickname", placeholder="닉네임", type="text", minlength="2", maxlength="15", required).login-form__nickname
         button(type="button").login-form__confirm-nickname 닉네임 중복확인
