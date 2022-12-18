@@ -86,6 +86,11 @@ const reqAuthenticodeHandler = async () => {
   printAuthenticodeTTL();
 };
 
+const convertUppercaseHandler = async () => {
+  const authenticode = authenticodeInput.value;
+  authenticodeInput.value = authenticode.toUpperCase();
+};
+
 const confirmAuthenticodeHandler = async () => {
   const email = emailInput.value;
   if (!validateEmail(email)) {
@@ -169,6 +174,7 @@ const comfirmPassHandler = () => {
 
 reqAuthenticodeBtn.addEventListener("click", reqAuthenticodeHandler);
 confirmAuthenticodeBtn.addEventListener("click", confirmAuthenticodeHandler);
+authenticodeInput.addEventListener("input", convertUppercaseHandler);
 uploadAvatarInput.addEventListener("change", changeAvatarImgHandler);
 nicknameConfirmBtn.addEventListener("click", confirmNicknameHandler);
 passInput.addEventListener("input", checkPassFormatHandler);
