@@ -1,0 +1,25 @@
+.error-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.error-info__status,
+.error-info__message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-info__status {
+  font-size: 70px;
+  font-weight: 900;
+  height: 100px;
+  margin-bottom: 100px;
+}
+
+.error-info__message {
+  font-size: 50px;
+  font-weight: 600;
+}

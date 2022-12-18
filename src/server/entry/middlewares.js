@@ -8,7 +8,11 @@ export const localsMiddleware = (req, res, next) => {
 };
 
 export const error404Middleware = (req, res, next) => {
-  return res.render("screens/root/404", { pageTitle: 404 });
+  return res.render("screens/root/404", {
+    pageTitle: 404,
+    status: 404,
+    message: "페이지를 찾을 수 없습니다.",
+  });
 };
 
 export const uploadAvatarMiddleware = multer({
