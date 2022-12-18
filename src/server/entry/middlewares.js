@@ -1,21 +1,6 @@
 import multer from "multer";
 import { validationResult } from "express-validator";
 
-const avatarFileFilter = (req, file, cb) => {
-  if (
-    file &&
-    (file.mimetype === "image/jpg" ||
-      file.mimetype === "image/jpeg" ||
-      file.mimetype === "image/png")
-  ) {
-    cb(null, true);
-    req.fileValidate = true;
-  } else {
-    cb(null, false);
-    req.fileInvalidateMsg = "jpg, jpeg, png 형식이 아닙니다.";
-  }
-};
-
 export const localsMiddleware = (req, res, next) => {
   res.locals.isLoggedIn = Boolean(req.session.isLoggedIn);
   res.locals.loggedInUser = req.session.user;
@@ -31,7 +16,20 @@ export const uploadAvatarMiddleware = multer({
   limits: {
     fileSize: 1024 * 1024 * 5, // 5MB
   },
-  fileFilter: avatarFileFilter,
+  fileFilter: (req, file, cb) => {
+    if (
+      file &&
+      (file.mimetype === "image/jpg" ||
+        file.mimetype === "image/jpeg" ||
+        file.mimetype === "image/png")
+    ) {
+      req.fileValidate = true;
+      cb(null, true);
+    } else {
+      req.fileInvalidateMsg = "jpg, jpeg, png 형식이 아닙니다.";
+      cb(null, false);
+    }
+  },
 }).single("avatar");
 
 export const validateMiddleware = (req, res, next) => {
