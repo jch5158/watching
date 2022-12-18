@@ -30,7 +30,7 @@ apiRouter
 
 apiRouter
   .route("/users/nickname")
-  .all(alreadySetNicknameMiddleware, [
+  .all([
     body("nickname")
       .exists()
       .trim()
@@ -38,6 +38,6 @@ apiRouter
     validateMiddleware,
   ])
   .post(postConfirmNickname)
-  .put(putNickname);
+  .put(alreadySetNicknameMiddleware, putNickname);
 
 export default apiRouter;
