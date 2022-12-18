@@ -16,6 +16,11 @@ import {
   getStartGithubLogin,
   getFinishGithubLogin,
   getSetUserNickname,
+  userProfile,
+  getEditUserProfile,
+  postEditUserProfile,
+  getEditPassword,
+  postEditPassword,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
@@ -77,5 +82,48 @@ userRouter
   .route("/nickname")
   .all(alreadySetNicknameMiddleware)
   .get(getSetUserNickname);
+
+userRouter.get("/:id([0-9a-f]{24})", userProfile);
+userRouter
+  .route("/profile/edit")
+  .get(getEditUserProfile)
+  .post(
+    uploadAvatarMiddleware,
+    [
+      body("newNickname")
+        .exists()
+        .trim()
+        .matches(/^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/),
+      validateMiddleware,
+    ],
+    postEditUserProfile
+  );
+userRouter
+  .route("/password/edit")
+  .get(getEditPassword)
+  .post(
+    [
+      body("password")
+        .exists()
+        .trim()
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/
+        ),
+      body("new_password")
+        .exists()
+        .trim()
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/
+        ),
+      body("new_password_confirm")
+        .exists()
+        .trim()
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/
+        ),
+      validateMiddleware,
+    ],
+    postEditPassword
+  );
 
 export default userRouter;

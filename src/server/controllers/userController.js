@@ -2,7 +2,6 @@ import User from "../models/User";
 import { webcrypto } from "crypto";
 import redisClient from "../entry/initRedis";
 import { sendAuthenticodeEmail } from "../modules/mailer";
-import { uploadAvatarMiddleware } from "../entry/middlewares";
 import bcrypt from "bcrypt";
 import {
   getKakaoLoginRedirectUri,
@@ -15,12 +14,15 @@ import {
   getGithubUserData,
   getGithubEmailData,
 } from "../modules/githubLogin";
+import { fileExistsAndRemove } from "../modules/fileSystem";
+import flash from "express-flash";
 
 const joinTemplate = "screens/users/join";
 const loginTemplate = "screens/users/login";
 
-const joinTitle = "회원가입";
-const loginTitle = "로그인";
+const joinTitle = "Join";
+const loginTitle = "Login";
+const editPasswordTitle = "Edit Password";
 
 const joingSuccess = "회원가입 완료";
 const loginSuccess = "로그인 완료";
@@ -41,7 +43,10 @@ export const getJoin = (req, res) => {
 };
 
 export const postJoin = (req, res) => {
-  if (!req.fileValidate || req.fileInvalidateMsg) {
+  if (!req.fileValidate) {
+    req.flash("warning", "이미지 파일을 확인해주세요.");
+    return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
+  } else if (req.fileInvalidateMsg) {
     req.flash("warning", req.fileInvalidateMsg);
     return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
   }
@@ -347,4 +352,104 @@ export const putNickname = async (req, res) => {
     { new: true }
   );
   return res.sendStatus(200);
+};
+
+export const userProfile = async (req, res) => {
+  return res.send("Hello World");
+};
+
+export const getEditUserProfile = (req, res) => {
+  return res.render("screens/users/edit-profile", { pageTitle: "Edit" });
+};
+
+export const postEditUserProfile = async (req, res, next) => {
+  if (req.fileInvalidateMsg) {
+    req.flash("warning", req.fileInvalidateMsg);
+    return res.status(400).redirect("/");
+  }
+
+  const {
+    session: {
+      user: { _id, avatar_url, nickname },
+    },
+    body: { newNickname },
+    file,
+  } = req;
+
+  try {
+    const path = file?.path;
+    if (path && !avatar_url.startsWith("http")) {
+      fileExistsAndRemove(avatar_url);
+    }
+
+    if (nickname !== newNickname) {
+      console.log(newNickname);
+      const exists = await User.exists({ nickname: newNickname });
+      if (exists) {
+        req.flash("warning", "중복된 닉네임입니다.");
+        return res.status(400).redirect("/");
+      }
+    }
+
+    req.session.user = await User.findByIdAndUpdate(
+      _id,
+      {
+        nickname: nickname === newNickname ? nickname : newNickname,
+        avatar_url: avatar_url === path ? avatar_url : path,
+      },
+      { new: true }
+    );
+
+    req.flash("success", "회원정보 수정 완료");
+    return res.redirect("/");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEditPassword = (req, res) => {
+  return res.render("screens/users/edit-password", {
+    pageTitle: editPasswordTitle,
+  });
+};
+
+export const postEditPassword = async (req, res, next) => {
+  const {
+    body: { password, new_password, new_password_confirm },
+    session: {
+      user: { _id },
+    },
+  } = req;
+
+  try {
+    const user = await User.findById(_id);
+    if (!(await bcrypt.compare(password, user.password))) {
+      req.flash("warning", "기존 비밀번호가 틀립니다.");
+      return res.render("screens/users/edit-password", {
+        pageTitle: editPasswordTitle,
+      });
+    }
+
+    if (password === new_password) {
+      req.flash("warning", "변경할 비밀번호가 동일합니다.");
+      return res.render("screens/users/edit-password", {
+        pageTitle: editPasswordTitle,
+      });
+    }
+
+    if (new_password !== new_password_confirm) {
+      req.flash("warning", "변경할 비밀번호가 일치하지 않습니다.");
+      return res.render("screens/users/edit-password", {
+        pageTitle: editPasswordTitle,
+      });
+    }
+
+    user.password = new_password;
+    await user.save();
+    req.session.user.password = user.password;
+    req.flash("success", "비밀번호 변경 완료");
+    return res.redirect("/");
+  } catch (error) {
+    return next(error);
+  }
 };

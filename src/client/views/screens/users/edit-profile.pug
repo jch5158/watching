@@ -1,0 +1,22 @@
+extends ../../templates/main
+
+block content 
+    span.edit-profile-title 회원정보 수정
+    form(method="POST", action=`/users/profile/edit` enctype="multipart/form-data").login-form
+        div.avatar-upload 
+            label(for="avatar").avatar-upload__label 대표 이미지
+            if loggedInUser.avatar_url.startsWith("http")
+                img(src=`${loggedInUser.avatar_url}`).avatar-upload__avatar
+            else 
+                img(src=`/${loggedInUser.avatar_url}`).avatar-upload__avatar
+            input(type="file", id="avatar", name="avatar", accept="image/jpg, image/jpeg, image/png").avatar-upload__input.login_.display-none
+        input(name="newNickname", placeholder="닉네임", type="text", minlength="2", maxlength="15", value=loggedInUser.nickname, required).login-form__nickname
+        button(type="button").login-form__confirm-nickname 닉네임 중복확인
+        span.login-form__nickname-result
+        input(type="submit", value="수정")
+    if !loggedInUser.sns_account
+        div.edit-password
+            span 비밀번호 변경을 원하시나요? 
+            a(href="/users/password/edit") 비밀번호 변경 &rarr;
+block scripts 
+    script(src="/assets/js/users/edit-profile.js") 

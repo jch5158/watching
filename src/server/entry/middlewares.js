@@ -49,7 +49,8 @@ export const validateMiddleware = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors.array());
-    return res.sendStatus(400);
+    req.flash("warning", "잘못된 요청입니다.");
+    return res.status(400).redirect("/");
   }
   return next();
 };
