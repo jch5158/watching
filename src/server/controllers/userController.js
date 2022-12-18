@@ -262,14 +262,15 @@ export const getFinishKakaoLogin = async (req, res) => {
       return res.render(loginTemplate);
     }
 
-    let isOverlapNickname = true;
+    let isOverlapNickname = false;
     let user = await User.findOne({ email: kakao_account.email });
     if (!user) {
       let nickname = "";
       user = await User.findOne({ nickname: profile.nickname });
       if (!user) {
-        isOverlapNickname = false;
         nickname = profile.nickname;
+      } else {
+        isOverlapNickname = true;
       }
       user = await User.create({
         name: profile.nickname,
@@ -321,14 +322,15 @@ export const getFinishGithubLogin = async (req, res) => {
       return res.render(loginTemplate);
     }
 
-    let isOverlapNickname = true;
+    let isOverlapNickname = false;
     let user = await User.findOne({ email: emailObj.email });
     if (!user) {
       let nickname = "";
       user = await User.findOne({ nickname: userData.login });
       if (!user) {
-        isOverlapNickname = false;
         nickname = userData.login;
+      } else {
+        isOverlapNickname = true;
       }
       user = await User.create({
         name: userData.name,
