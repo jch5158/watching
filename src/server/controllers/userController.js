@@ -15,7 +15,6 @@ import {
   getGithubEmailData,
 } from "../modules/githubLogin";
 import { fileExistsAndRemove } from "../modules/fileSystem";
-import flash from "express-flash";
 
 const joinTemplate = "screens/users/join";
 const loginTemplate = "screens/users/login";
