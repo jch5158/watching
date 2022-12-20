@@ -1,38 +1,15 @@
 import express from "express";
 import { body } from "express-validator";
-import {
-  uploadAvatarMiddleware,
-  validateMiddleware,
-  alreadySetNicknameMiddleware,
-  onlyLoginMiddleware,
-  onlyNotSNSAccountMiddleware,
-  onlyNotLoginMiddleware,
-} from "../entry/middlewares";
-import {
-  getJoin,
-  postJoin,
-  getLogin,
-  postLogin,
-  getLogout,
-  getStartKakaoLogin,
-  getFinishKakaoLogin,
-  getStartGithubLogin,
-  getFinishGithubLogin,
-  getSetUserNickname,
-  userProfile,
-  getEditUserProfile,
-  postEditUserProfile,
-  getEditPassword,
-  postEditPassword,
-} from "../controllers/userController";
+import middlewares from "../entry/middlewares";
+import userController from "../controllers/userController";
 
 const userRouter = express.Router();
 
 userRouter
   .route("/join")
-  .get(getJoin)
+  .get(userController.getJoin)
   .post(
-    uploadAvatarMiddleware,
+    middlewares.uploadAvatarMiddleware,
     [
       body("name")
         .exists()
@@ -57,78 +34,82 @@ userRouter
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/
         ),
       body("token").exists().trim().isLength(10),
-      validateMiddleware,
+      middlewares.validateMiddleware,
     ],
-    postJoin
+    userController.postJoin
   );
 
 userRouter
   .route("/login")
-  .all(onlyNotLoginMiddleware)
-  .get(getLogin)
+  .all(middlewares.onlyNotLoginMiddleware)
+  .get(userController.getLogin)
   .post(
     [
       body("email").exists().isEmail(),
       body("password").exists(),
-      validateMiddleware,
+      middlewares.validateMiddleware,
     ],
-    postLogin
+    userController.postLogin
   );
 
-userRouter.get("/logout", onlyLoginMiddleware, getLogout);
+userRouter.get(
+  "/logout",
+  middlewares.onlyLoginMiddleware,
+  userController.getLogout
+);
 
 userRouter.get(
   "/kakao/login/start",
-  onlyNotLoginMiddleware,
-  getStartKakaoLogin
+  middlewares.onlyNotLoginMiddleware,
+  userController.getStartKakaoLogin
 );
 
 userRouter.get(
   "/kakao/login/finish",
-  onlyNotLoginMiddleware,
-  getFinishKakaoLogin
+  middlewares.onlyNotLoginMiddleware,
+  userController.getFinishKakaoLogin
 );
 
 userRouter.get(
   "/github/login/start",
-  onlyNotLoginMiddleware,
-  getStartGithubLogin
+  middlewares.onlyNotLoginMiddleware,
+  userController.getStartGithubLogin
 );
 
 userRouter.get(
   "/github/login/finish",
-  onlyNotLoginMiddleware,
-  getFinishGithubLogin
+  middlewares.onlyNotLoginMiddleware,
+  userController.getFinishGithubLogin
 );
 
 userRouter
   .route("/nickname")
-  .all(onlyLoginMiddleware)
-  .all(alreadySetNicknameMiddleware)
-  .get(getSetUserNickname);
+  .all(middlewares.onlyLoginMiddleware)
+  .all(middlewares.alreadySetNicknameMiddleware)
+  .get(userController.getSetUserNickname);
 
-userRouter.get("/:id([0-9a-f]{24})", userProfile);
+userRouter.get("/:id([0-9a-f]{24})", userController.getUserProfile);
 
 userRouter
   .route("/profile/edit")
-  .all(onlyLoginMiddleware)
-  .get(getEditUserProfile)
+  .all(middlewares.onlyLoginMiddleware)
+  .get(userController.getEditUserProfile)
   .post(
-    uploadAvatarMiddleware,
+    middlewares.uploadAvatarMiddleware,
     [
       body("newNickname")
         .exists()
         .trim()
         .matches(/^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/),
-      validateMiddleware,
+      middlewares.validateMiddleware,
     ],
-    postEditUserProfile
+    userController.postEditUserProfile
   );
 
 userRouter
   .route("/password/edit")
-  .all(onlyLoginMiddleware, onlyNotSNSAccountMiddleware)
-  .get(getEditPassword)
+  .all(middlewares.onlyLoginMiddleware, middlewares.onlyNotSNSAccountMiddleware)
+  .get(userController.getEditPassword)
   .post(
     [
       body("password")
@@ -149,9 +130,9 @@ userRouter
         .matches(
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/
         ),
-      validateMiddleware,
+      middlewares.validateMiddleware,
     ],
-    postEditPassword
+    userController.postEditPassword
   );
 
 export default userRouter;

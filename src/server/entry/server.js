@@ -7,12 +7,7 @@ import morgan from "morgan";
 import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
 import userRouter from "../routers/userRouter";
-import {
-  localsMiddleware,
-  setNicknameMiddleware,
-  error404Middleware,
-  error500Middleware,
-} from "./middlewares";
+import middlewares from "./middlewares";
 
 const app = express();
 const logger = morgan("dev");
@@ -47,12 +42,12 @@ app.use(
   })
 );
 
-app.use(localsMiddleware);
-app.use(setNicknameMiddleware);
+app.use(middlewares.localsMiddleware);
+app.use(middlewares.setNicknameMiddleware);
 app.use("/", rootRouter);
 app.use("/users", userRouter);
 app.use("/api", apiRouter);
-app.use(error500Middleware);
-app.use(error404Middleware);
+app.use(middlewares.error500Middleware);
+app.use(middlewares.error404Middleware);
 
 export default app;

@@ -1,8 +1,8 @@
 import express from "express";
-import { home } from "../controllers/rootController";
+import rootController from "../controllers/rootController";
 
 const rootRouter = express.Router();
 
-rootRouter.get("/", home);
+rootRouter.get("/", rootController.home);
 
 export default rootRouter;

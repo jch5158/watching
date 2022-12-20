@@ -30,19 +30,5 @@ export const sendAuthenticodeEmail = async (email, authenticode) => {
     },
   };
 
-  try {
-    return await transporter.sendMail(data, function (error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(info.response);
-      }
-    });
-  } catch (error) {
-    console.log(error);
-    req.flash("error", serverErrorMsg);
-    return res
-      .status(500)
-      .render(error500Template, { pageTitle: error500Title });
-  }
+  return transporter.sendMail(data);
 };

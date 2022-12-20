@@ -1,31 +1,23 @@
 import express from "express";
 import { body, query } from "express-validator";
-import {
-  validateMiddleware,
-  alreadySetNicknameMiddleware,
-} from "../entry/middlewares";
-import {
-  sendAuthenticodeByEmail,
-  confirmAuthenticode,
-  postConfirmNickname,
-  putNickname,
-} from "../controllers/userController";
+import middlewares from "../entry/middlewares";
+import apiController from "../controllers/apiController";
 
 const apiRouter = express.Router();
 
 apiRouter
   .route("/users/email/authenticode")
   .get(
-    [query("email").exists().trim().isEmail(), validateMiddleware],
-    sendAuthenticodeByEmail
+    [query("email").exists().trim().isEmail(), middlewares.validateMiddleware],
+    apiController.sendAuthenticodeByEmail
   )
   .post(
     [
       body("email").exists().trim().isEmail(),
       body("authenticode").exists().trim().isLength(6),
-      validateMiddleware,
+      middlewares.validateMiddleware,
     ],
-    confirmAuthenticode
+    apiController.postConfirmAuthenticode
   );
 
 apiRouter
@@ -35,9 +27,9 @@ apiRouter
       .exists()
       .trim()
       .matches(/^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/),
-    validateMiddleware,
+    middlewares.validateMiddleware,
   ])
-  .post(postConfirmNickname)
-  .put(alreadySetNicknameMiddleware, putNickname);
+  .post(apiController.postConfirmNickname)
+  .put(middlewares.alreadySetNicknameMiddleware, apiController.putNickname);
 
 export default apiRouter;
