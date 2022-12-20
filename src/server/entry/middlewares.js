@@ -96,3 +96,48 @@ export const setNicknameMiddleware = (req, res, next) => {
   }
   return next();
 };
+
+export const onlyLoginMiddleware = (req, res, next) => {
+  const {
+    session: { isLoggedIn },
+  } = req;
+
+  if (!isLoggedIn) {
+    req.flash("warning", "로그인을 먼저 해주세요");
+    return res.redirect("/");
+  }
+
+  return next();
+};
+
+export const onlyNotLoginMiddleware = (req, res, next) => {
+  const {
+    session: { user },
+  } = req;
+
+  if (user) {
+    req.flash("warning", "로그아웃을 해주세요");
+    return res.redirect("/");
+  }
+
+  next();
+};
+
+export const onlyNotSNSAccountMiddleware = (req, res, next) => {
+  const {
+    session: { user },
+  } = req;
+
+  if (!user) {
+    req.flash("warning", "로그인을 먼저 해주세요");
+    return res.redirect("/");
+  }
+
+  const { sns_account } = user;
+  if (sns_account) {
+    req.flash("warning", "SNS 계정은 접근이 불가합니다.");
+    return res.redirect("/");
+  }
+
+  return next();
+};

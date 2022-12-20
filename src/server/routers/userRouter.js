@@ -4,6 +4,9 @@ import {
   uploadAvatarMiddleware,
   validateMiddleware,
   alreadySetNicknameMiddleware,
+  onlyLoginMiddleware,
+  onlyNotSNSAccountMiddleware,
+  onlyNotLoginMiddleware,
 } from "../entry/middlewares";
 import {
   getJoin,
@@ -61,6 +64,7 @@ userRouter
 
 userRouter
   .route("/login")
+  .all(onlyNotLoginMiddleware)
   .get(getLogin)
   .post(
     [
@@ -70,22 +74,44 @@ userRouter
     ],
     postLogin
   );
-userRouter.get("/logout", getLogout);
 
-userRouter.get("/kakao/login/start", getStartKakaoLogin);
-userRouter.get("/kakao/login/finish", getFinishKakaoLogin);
+userRouter.get("/logout", onlyLoginMiddleware, getLogout);
 
-userRouter.get("/github/login/start", getStartGithubLogin);
-userRouter.get("/github/login/finish", getFinishGithubLogin);
+userRouter.get(
+  "/kakao/login/start",
+  onlyNotLoginMiddleware,
+  getStartKakaoLogin
+);
+
+userRouter.get(
+  "/kakao/login/finish",
+  onlyNotLoginMiddleware,
+  getFinishKakaoLogin
+);
+
+userRouter.get(
+  "/github/login/start",
+  onlyNotLoginMiddleware,
+  getStartGithubLogin
+);
+
+userRouter.get(
+  "/github/login/finish",
+  onlyNotLoginMiddleware,
+  getFinishGithubLogin
+);
 
 userRouter
   .route("/nickname")
+  .all(onlyLoginMiddleware)
   .all(alreadySetNicknameMiddleware)
   .get(getSetUserNickname);
 
 userRouter.get("/:id([0-9a-f]{24})", userProfile);
+
 userRouter
   .route("/profile/edit")
+  .all(onlyLoginMiddleware)
   .get(getEditUserProfile)
   .post(
     uploadAvatarMiddleware,
@@ -98,8 +124,10 @@ userRouter
     ],
     postEditUserProfile
   );
+
 userRouter
   .route("/password/edit")
+  .all(onlyLoginMiddleware, onlyNotSNSAccountMiddleware)
   .get(getEditPassword)
   .post(
     [
