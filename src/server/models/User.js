@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   sns_account: { type: Boolean, required: true, default: false },
   avatar_url: { type: String, required: true },
+  create_at: { type: Date, required: true, default: Date.now },
 });
 
 userSchema.pre("save", async function () {
