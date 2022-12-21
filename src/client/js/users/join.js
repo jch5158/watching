@@ -1,14 +1,5 @@
-import {
-  validateEmail,
-  validateNickname,
-  validateAuthenticode,
-  validatePassword,
-} from "../validators/userValidator";
-import {
-  confirmNickname,
-  requestAuthenticode,
-  confirmAuthenticode,
-} from "../modules/users";
+import userValidator from "../validators/userValidator";
+import userApi from "../modules/usersApi";
 
 const emailInput = document.querySelector(".user-form__email");
 const reqAuthenticodeBtn = document.querySelector(
@@ -69,12 +60,12 @@ const printAuthenticodeTTL = () => {
 
 const reqAuthenticodeHandler = async () => {
   const email = emailInput.value;
-  if (!validateEmail(email)) {
+  if (!userValidator.validateEmail(email)) {
     alert("E-mail 형식이 잘못됐습니다.");
     return;
   }
 
-  const status = await requestAuthenticode(email);
+  const status = await userApi.requestAuthenticode(email);
   if (status !== 200) {
     alert("E-mail 인증코드 전송 실패");
     return;
@@ -93,18 +84,18 @@ const convertUppercaseHandler = async () => {
 
 const confirmAuthenticodeHandler = async () => {
   const email = emailInput.value;
-  if (!validateEmail(email)) {
+  if (!userValidator.validateEmail(email)) {
     alert("E-mail 형식이 잘못됐습니다.");
     return;
   }
 
   const authenticode = authenticodeInput.value;
-  if (!validateAuthenticode(authenticode)) {
+  if (!userValidator.validateAuthenticode(authenticode)) {
     alert("E-mail code가 잘못됐습니다.");
     return;
   }
 
-  const res = await confirmAuthenticode(email, authenticode);
+  const res = await userApi.confirmAuthenticode(email, authenticode);
   if (res.status !== 200) {
     alert("E-mail 인증 실패");
     return;
@@ -135,12 +126,12 @@ const changeAvatarImgHandler = (event) => {
 
 const confirmNicknameHandler = async () => {
   const nickname = nicknameInput.value;
-  if (!validateNickname(nickname)) {
+  if (!userValidator.validateNickname(nickname)) {
     alert("닉네임 형식이 잘못되었습니다.");
     return;
   }
 
-  const status = await confirmNickname(nickname);
+  const status = await userApi.confirmNickname(nickname);
   if (status !== 200) {
     nicknameResultSpan.innerText = "중복된 닉네임입니다.";
     return;
@@ -151,7 +142,7 @@ const confirmNicknameHandler = async () => {
 
 const checkPassFormatHandler = () => {
   const pass = passInput.value;
-  if (validatePassword(pass)) {
+  if (userValidator.validatePassword(pass)) {
     passFormatSpan.innerText = "사용 가능한 비밀번호입니다.";
   } else {
     passFormatSpan.innerText = "비밀번호 형식이 잘못되었습니다.";
@@ -161,7 +152,7 @@ const checkPassFormatHandler = () => {
 const comfirmPassHandler = () => {
   const pass = passInput.value;
   const confirmPass = confirmPassInput.value;
-  if (!validatePassword(pass)) {
+  if (!userValidator.validatePassword(pass)) {
     passResultSpan.innerText = "비밀번호 형식을 확인해주세요.";
   }
 

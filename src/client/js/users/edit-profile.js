@@ -1,5 +1,5 @@
-import { validateNickname } from "../validators/userValidator";
-import { confirmNickname } from "../modules/users";
+import userValidator from "../validators/userValidator";
+import userApi from "../modules/usersApi";
 
 const uploadAvatarInput = document.querySelector(".avatar-upload__input");
 const uploadAvatar = document.querySelector(".avatar-upload__avatar");
@@ -24,11 +24,11 @@ const changeAvatarImgHandler = (event) => {
 
 const confirmNicknameHandler = async () => {
   const nickname = nicknameInput.value;
-  if (!validateNickname(nickname)) {
+  if (!userValidator.validateNickname(nickname)) {
     alert("닉네임 형식이 잘못되었습니다.");
     return;
   }
-  const status = await confirmNickname(nickname);
+  const status = await userApi.confirmNickname(nickname);
   if (status !== 200) {
     nicknameResultSpan.innerText = "중복된 닉네임입니다.";
     return;

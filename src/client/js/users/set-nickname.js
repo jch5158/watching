@@ -1,5 +1,5 @@
-import { validateNickname } from "../validators/userValidator";
-import { confirmNickname, setNickname } from "../modules/users";
+import userValidator from "../validators/userValidator";
+import userApi from "../modules/usersApi";
 
 const nicknameInput = document.querySelector(".user-form__nickname");
 const nicknameConfirmBtn = document.querySelector(
@@ -14,12 +14,12 @@ const setNicknameSubmit = document.querySelector(
 
 const confirmNicknameHandler = async () => {
   const nickname = nicknameInput.value;
-  if (!validateNickname(nickname)) {
+  if (!userValidator.validateNickname(nickname)) {
     alert("닉네임 형식이 잘못되었습니다.");
     return;
   }
 
-  const status = await confirmNickname(nickname);
+  const status = await userApi.confirmNickname(nickname);
   if (status !== 200) {
     nicknameResultSpan.innerText = "중복된 닉네임입니다.";
     return;
@@ -36,7 +36,7 @@ const setNicknameHandler = async (event) => {
     return;
   }
 
-  const status = await setNickname(nickname);
+  const status = await userApi.setNickname(nickname);
   if (status !== 200) {
     alert("닉네임 설정이 불가합니다.");
     return;

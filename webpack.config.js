@@ -9,7 +9,7 @@ module.exports = {
     "users/set-nickname": "./src/client/js/users/set-nickname.js",
     "users/edit-profile": "./src/client/js/users/edit-profile.js",
     "users/edit-password": "./src/client/js/users/edit-password.js",
-    "modules/users": "./src/client/js/modules/users.js",
+    "modules/usersApi": "./src/client/js/modules/usersApi.js",
     "validators/userValidator": "./src/client/js/validators/userValidator.js",
   },
   output: {
