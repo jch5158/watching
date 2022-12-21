@@ -1,0 +1,44 @@
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+  box-sizing: border-box;
+  padding: 0 100px;
+}
+
+.profile-header__info-container {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.profile-header__avatar {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+}
+
+.profile-header__info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  height: 70%;
+  margin-left: 25px;
+
+  span:first-child {
+    font-size: 25px;
+    font-weight: 600;
+  }
+}
+
+.profile-header__subscribe-btn {
+  width: 70px;
+  height: 40px;
+  border-radius: 9999px;
+  cursor: pointer;
+  background-color: #f1f1f1;
+  &:active {
+    background-color: rgba(170, 170, 170, 1);
+  }
+}

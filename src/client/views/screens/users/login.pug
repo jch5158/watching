@@ -1,6 +1,9 @@
 extends ../../templates/main
 
+block header
+    include ../../partials/header
 block content 
+    span.title 로그인
     form(method="POST", action="/users/login")
         input(name="email", placeholder="E-mail", type="email", required)
         input(name="password", placeholder="비밀번호", type="password", required)
@@ -14,6 +17,6 @@ block content
                         <i class="fab fa-github"></i>
                     div 
                         span 깃헙 로그인
-    div.auth-switch
+    div.switch-service
         span 회원이 아니신가요? 
         a(href="/users/join") 회원가입 &rarr;

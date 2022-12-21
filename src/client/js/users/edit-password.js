@@ -1,9 +1,9 @@
 import { validatePassword } from "../validators/userValidator";
 
-const passInput = document.querySelector(".login-form__pass");
-const confirmPassInput = document.querySelector(".login-form__confirm-pass");
-const passFormatSpan = document.querySelector(".login-form__pass-format");
-const passResultSpan = document.querySelector(".login-form__pass-result");
+const passInput = document.querySelector(".user-form__pass");
+const confirmPassInput = document.querySelector(".user-form__confirm-pass");
+const passFormatSpan = document.querySelector(".user-form__pass-format");
+const passResultSpan = document.querySelector(".user-form__pass-result");
 
 const checkPassFormatHandler = () => {
   const pass = passInput.value;

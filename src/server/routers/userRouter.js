@@ -88,7 +88,7 @@ userRouter
   .all(middlewares.alreadySetNicknameMiddleware)
   .get(userController.getSetUserNickname);
 
-userRouter.get("/:id([0-9a-f]{24})", userController.getUserProfile);
+userRouter.get("/:id([0-9a-f]{24})", userController.getProfile);
 
 userRouter
   .route("/profile/edit")

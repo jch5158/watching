@@ -1,0 +1,12 @@
+a(href="/").header__logo
+        i.fab.fa-youtube
+nav.header-nav 
+    ul.header-nav__ul        
+        //- li
+        //-     a(href="/search")
+        //-         i.fas.fa-search.header-nav__i
+        if String(loggedInUser._id) === String(user._id)
+            li.header-nav__li 
+                a(href=`/users/profile/edit`) Edit
+            li.header-nav__li 
+                a(href="/users/logout") Logout 

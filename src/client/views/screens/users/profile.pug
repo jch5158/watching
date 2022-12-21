@@ -1,0 +1,15 @@
+extends ../../templates/main
+
+block header
+    include ../../partials/profile-header
+block content
+    div.profile-header
+        div.profile-header__info-container
+            if user.avatar_url.startsWith("http")
+                img(src=user.avatar_url).profile-header__avatar
+            else 
+                img(src=`/${user.avatar_url}`).profile-header__avatar
+            div.profile-header__info
+                span=user.nickname
+                span 구독자 70만명
+        button.profile-header__subscribe-btn 구독

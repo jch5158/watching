@@ -1,0 +1,19 @@
+a(href="/").header__logo
+        i.fab.fa-youtube
+nav.header-nav 
+    ul.header-nav__ul        
+        //- li
+        //-     a(href="/search")
+        //-         i.fas.fa-search.header-nav__i
+        if !isLoggedIn
+            li.header-nav__li
+                a(href="/users/login") Login
+            li.header-nav__li.header-nav__join
+                a(href="/users/join") Join
+        else 
+            li.header-nav__li
+                a(href=`/users/${loggedInUser._id}`) 
+                    if loggedInUser.avatar_url.startsWith("http")
+                        img(src=loggedInUser.avatar_url).header-nav__avatar
+                    else 
+                        img(src=`/${loggedInUser.avatar_url}`).header-nav__avatar

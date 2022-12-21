@@ -10,35 +10,35 @@ import {
   confirmAuthenticode,
 } from "../modules/users";
 
-const emailInput = document.querySelector(".login-form__email");
+const emailInput = document.querySelector(".user-form__email");
 const reqAuthenticodeBtn = document.querySelector(
-  ".login-form__req-authenticode"
+  ".user-form__req-authenticode"
 );
-const authenticodeInput = document.querySelector(".login-form__authenticode");
+const authenticodeInput = document.querySelector(".user-form__authenticode");
 const authenticodeTTLSpan = document.querySelector(
-  ".login-form__authenticode-ttl"
+  ".user-form__authenticode-ttl"
 );
 const uploadAvatarInput = document.querySelector(".avatar-upload__input");
 const uploadAvatar = document.querySelector(".avatar-upload__avatar");
 
-const nicknameInput = document.querySelector(".login-form__nickname");
+const nicknameInput = document.querySelector(".user-form__nickname");
 const nicknameConfirmBtn = document.querySelector(
-  ".login-form__confirm-nickname"
+  ".user-form__confirm-nickname"
 );
 
 const nicknameResultSpan = document.querySelector(
-  ".login-form__nickname-result"
+  ".user-form__nickname-result"
 );
 
 const confirmAuthenticodeBtn = document.querySelector(
-  ".login-form__confirm-authenticode"
+  ".user-form__confirm-authenticode"
 );
-const tokenInput = document.querySelector(".login-form__token");
+const tokenInput = document.querySelector(".user-form__token");
 
-const passInput = document.querySelector(".login-form__pass");
-const confirmPassInput = document.querySelector(".login-form__confirm-pass");
-const passFormatSpan = document.querySelector(".login-form__pass-format");
-const passResultSpan = document.querySelector(".login-form__pass-result");
+const passInput = document.querySelector(".user-form__pass");
+const confirmPassInput = document.querySelector(".user-form__confirm-pass");
+const passFormatSpan = document.querySelector(".user-form__pass-format");
+const passResultSpan = document.querySelector(".user-form__pass-result");
 
 let authenticodeTTLInterval;
 let fileUrl;

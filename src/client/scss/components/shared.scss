@@ -1,8 +1,16 @@
-.edit-password,
-.auth-switch {
+.switch-service {
   text-align: center;
   margin-top: 40px;
   a {
     text-decoration: underline;
   }
+}
+
+.title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  font-weight: 600;
+  margin-bottom: 35px;
 }

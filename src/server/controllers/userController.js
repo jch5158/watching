@@ -8,10 +8,17 @@ import { fileExistsAndRemove } from "../modules/fileSystem";
 const userController = (() => {
   const loginTitle = "Login";
   const joinTitle = "Join";
+  const editProfileTitle = "Edit Profile";
   const editPasswordTitle = "Edit Password";
+  const editNicknameTitle = "Edit Nickname";
+  const profileTitle = "Profile";
 
   const joinTemplate = "screens/users/join";
   const loginTemplate = "screens/users/login";
+  const setNicknameTemplate = "screens/users/set-nickname";
+  const editProfileTemplate = "screens/users/edit-profile";
+  const editPasswordTemplate = "screens/users/edit-password";
+  const profileTemplate = "screens/users/profile";
 
   const joingSuccess = "회원가입 완료";
   const loginSuccess = "로그인 완료";
@@ -19,7 +26,7 @@ const userController = (() => {
 
   const userController = {
     getJoin(req, res) {
-      res.render("screens/users/join", { pageTitle: joinTitle });
+      res.render(joinTemplate, { pageTitle: joinTitle });
     },
 
     postJoin(req, res, next) {
@@ -284,17 +291,26 @@ const userController = (() => {
     },
 
     getSetUserNickname(req, res) {
-      return res.render("screens/users/set-nickname", {
-        pageTitle: "닉네임 설정",
+      return res.render(setNicknameTemplate, {
+        pageTitle: editNicknameTitle,
       });
     },
 
-    getUserProfile(req, res) {
-      return res.send("Hello World");
+    async getProfile(req, res, next) {
+      const { id } = req.params;
+      try {
+        const user = await User.findById(id);
+        if (!user) {
+          return next();
+        }
+        return res.render(profileTemplate, { pageTitle: profileTitle, user });
+      } catch (error) {
+        return next(error);
+      }
     },
 
     getEditUserProfile(req, res) {
-      return res.render("screens/users/edit-profile", { pageTitle: "Edit" });
+      return res.render(editProfileTemplate, { pageTitle: editProfileTitle });
     },
 
     async postEditUserProfile(req, res, next) {
@@ -302,7 +318,7 @@ const userController = (() => {
         req.flash("warning", req.fileInvalidateMsg);
         return res
           .status(400)
-          .render("screens/users/edit-profile", { pageTitle: "Edit" });
+          .render(editProfileTemplate, { pageTitle: editProfileTitle });
       }
 
       const {
@@ -325,7 +341,7 @@ const userController = (() => {
             req.flash("warning", "중복된 닉네임입니다.");
             return res
               .status(400)
-              .render("screens/users/edit-profile", { pageTitle: "Edit" });
+              .render(editProfileTemplate, { pageTitle: editProfileTitle });
           }
         }
 
@@ -346,7 +362,7 @@ const userController = (() => {
     },
 
     getEditPassword(req, res) {
-      return res.render("screens/users/edit-password", {
+      return res.render(editPasswordTemplate, {
         pageTitle: editPasswordTitle,
       });
     },
@@ -363,21 +379,21 @@ const userController = (() => {
         const user = await User.findById(_id);
         if (!(await bcrypt.compare(password, user.password))) {
           req.flash("warning", "기존 비밀번호가 틀립니다.");
-          return res.render("screens/users/edit-password", {
+          return res.render(editPasswordTemplate, {
             pageTitle: editPasswordTitle,
           });
         }
 
         if (password === new_password) {
           req.flash("warning", "변경할 비밀번호가 동일합니다.");
-          return res.render("screens/users/edit-password", {
+          return res.render(editPasswordTemplate, {
             pageTitle: editPasswordTitle,
           });
         }
 
         if (new_password !== new_password_confirm) {
           req.flash("warning", "변경할 비밀번호가 일치하지 않습니다.");
-          return res.render("screens/users/edit-password", {
+          return res.render(editPasswordTemplate, {
             pageTitle: editPasswordTitle,
           });
         }

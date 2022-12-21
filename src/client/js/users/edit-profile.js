@@ -4,11 +4,11 @@ import { confirmNickname } from "../modules/users";
 const uploadAvatarInput = document.querySelector(".avatar-upload__input");
 const uploadAvatar = document.querySelector(".avatar-upload__avatar");
 const confirmNicknameBtn = document.querySelector(
-  ".login-form__confirm-nickname"
+  ".user-form__confirm-nickname"
 );
-const nicknameInput = document.querySelector(".login-form__nickname");
+const nicknameInput = document.querySelector(".user-form__nickname");
 const nicknameResultSpan = document.querySelector(
-  ".login-form__nickname-result"
+  ".user-form__nickname-result"
 );
 
 let fileUrl;

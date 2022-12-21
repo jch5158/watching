@@ -28,9 +28,9 @@ label {
   cursor: pointer !important;
 }
 
-.login-form__req-authenticode,
-.login-form__confirm-authenticode,
-.login-form__confirm-nickname {
+.user-form__req-authenticode,
+.user-form__confirm-authenticode,
+.user-form__confirm-nickname {
   all: unset;
   background-color: white;
   border-radius: 5px;
@@ -48,21 +48,25 @@ label {
   }
 }
 
-.login-form__authenticode-ttl,
-.login-form__nickname-result {
+.user-form__authenticode-ttl,
+.user-form__nickname-result {
   padding-left: 20px;
   color: white;
   font-size: 17px;
 }
 
-.login-form__pass-format,
-.login-form__pass-result {
+.user-form__pass-format,
+.user-form__pass-result {
   display: flex;
   margin-bottom: 10px;
   margin-top: 20px;
   font-size: 18px;
 }
 
-.login-form__confirm-pass {
+.user-form__confirm-pass {
   margin-bottom: 40px !important;
+}
+
+.user-form__current-pass {
+  margin-bottom: 60px !important;
 }

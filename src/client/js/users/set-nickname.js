@@ -1,12 +1,12 @@
 import { validateNickname } from "../validators/userValidator";
 import { confirmNickname, setNickname } from "../modules/users";
 
-const nicknameInput = document.querySelector(".login-form__nickname");
+const nicknameInput = document.querySelector(".user-form__nickname");
 const nicknameConfirmBtn = document.querySelector(
-  ".login-form__confirm-nickname"
+  ".user-form__confirm-nickname"
 );
 const nicknameResultSpan = document.querySelector(
-  ".login-form__nickname-result"
+  ".user-form__nickname-result"
 );
 const setNicknameSubmit = document.querySelector(
   '.set-nickname-container input[type="submit"]'
