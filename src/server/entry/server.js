@@ -7,6 +7,7 @@ import morgan from "morgan";
 import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
 import userRouter from "../routers/userRouter";
+import userVideoRouter from "../routers/userVideoRouter";
 import middlewares from "./middlewares";
 
 const app = express();
@@ -46,6 +47,7 @@ app.use(middlewares.localsMiddleware);
 app.use(middlewares.setNicknameMiddleware);
 app.use("/", rootRouter);
 app.use("/users", userRouter);
+app.use("/user-videos", userVideoRouter);
 app.use("/api", apiRouter);
 app.use(middlewares.error500Middleware);
 app.use(middlewares.error404Middleware);

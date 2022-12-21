@@ -1,8 +1,8 @@
 extends ../../templates/main
 
-block header
+block headers
     include ../../partials/header
-block content 
+block contents 
     span.title 로그인
     form(method="POST", action="/users/login")
         input(name="email", placeholder="E-mail", type="email", required)

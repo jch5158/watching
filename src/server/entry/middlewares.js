@@ -33,19 +33,49 @@ const middlewares = (function () {
       },
       fileFilter: (req, file, cb) => {
         if (
-          file &&
-          (file.mimetype === "image/jpg" ||
-            file.mimetype === "image/jpeg" ||
-            file.mimetype === "image/png")
+          file.mimetype === "image/jpg" ||
+          file.mimetype === "image/jpeg" ||
+          file.mimetype === "image/png"
         ) {
-          req.fileValidate = true;
+          req.fileExists = true;
           cb(null, true);
         } else {
-          req.fileInvalidateMsg = "jpg, jpeg, png 형식이 아닙니다.";
-          cb(null, false);
+          cb(new Error("jpg, jpeg, png 형식이 아닙니다."), false);
         }
       },
     }).single("avatar"),
+
+    uploadUserVideoMiddleware: multer({
+      dest: "uploads/user-videos",
+      limits: {
+        fieldSize: 1024 * 1024 * 10,
+      },
+      fileFilter: (req, file, cb) => {
+        if (file.fieldname === "userVideo") {
+          if (file.mimetype.startsWith("vide")) {
+            req.videoExists = true;
+            return cb(null, true);
+          } else {
+            return cb(new Error("video 형식이 아닙니다."), false);
+          }
+        } else if (file.fieldname === "thumbnail") {
+          if (
+            file.mimetype === "image/jpg" ||
+            file.mimetype === "image/jpeg" ||
+            file.mimetype === "image/png"
+          ) {
+            req.thumbnailExists = true;
+            return cb(null, true);
+          } else {
+            return cb(new Error("jpg, jpeg, png 형식이 아닙니다."), false);
+          }
+        }
+        return cb(new Error("input name is wrong"), false);
+      },
+    }).fields([
+      { name: "userVideo", maxCount: 1 },
+      { name: "thumbnail", maxCount: 1 },
+    ]),
 
     validateMiddleware(req, res, next) {
       const errors = validationResult(req);

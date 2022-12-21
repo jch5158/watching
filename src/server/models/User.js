@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   sns_account: { type: Boolean, required: true, default: false },
   avatar_url: { type: String, required: true },
+  number_of_subscribers: { type: Number, required: true, default: 0 },
   create_at: { type: Date, required: true, default: Date.now },
 });
 

@@ -1,8 +1,8 @@
 extends ../../templates/main
 
-block header
+block headers
     include ../../partials/nav-header
-block content 
+block contents 
     span.title 닉네임을 설정해 주세요
     form(action="").set-nickname-container 
         input(name="nickname", placeholder="닉네임", type="text", minlength="2", maxlength="15", required).user-form__nickname

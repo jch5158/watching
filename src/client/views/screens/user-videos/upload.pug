@@ -1,0 +1,23 @@
+extends ../../templates/main
+
+block headers
+    include ../../partials/header
+block contents
+    span.title Upload Video
+    form(method="POST", id="video-form", enctype="multipart/form-data").video-form
+        div.video-form__container
+            img(src="/resources/img/videos/base-video.jpg").video-form__thumbnail
+            span.video-form__video-name 비디오를 선택해주세요.
+            input(type="file", id="userVideo", name="userVideo", accept="video/*", required).video-form__video.display-none
+            input(type="file", id="thumbnail", name="thumbnail", accept="image/jpg, image/jpeg, image/png", required).video-form__video-thumbnail.display-none
+            div
+                label(for="userVideo").video-form__video-label 비디오
+                label(for="thumbnail").video-form__thumbnail-label 비디오 이미지
+        input(type="text", name="title" placeholder="Title", maxLength="50", required).video-form__title
+        textarea(name="description", placeholder="Description", maxLength="400").video-form__description
+        span.video-form__hashtags-guide , 로 구분하여 입력
+        input(type="text", name="hashtags" placeholder="Hashtags (최대 5개 등록 가능합니다.)", maxLength="90").video-form__hashtags
+        span.vidoe-form__hashtags-result
+        input(type="submit", value="Upload")
+block scripts 
+    script(src="/assets/js/user-videos/upload.js") 

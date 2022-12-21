@@ -30,11 +30,8 @@ const userController = (() => {
     },
 
     postJoin(req, res, next) {
-      if (!req.fileValidate) {
+      if (!req.fileExists) {
         req.flash("warning", "이미지 파일을 확인해주세요.");
-        return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
-      } else if (req.fileInvalidateMsg) {
-        req.flash("warning", req.fileInvalidateMsg);
         return res.status(400).render(joinTemplate, { pageTitle: joinTitle });
       }
 
@@ -314,13 +311,6 @@ const userController = (() => {
     },
 
     async postEditUserProfile(req, res, next) {
-      if (req.fileInvalidateMsg) {
-        req.flash("warning", req.fileInvalidateMsg);
-        return res
-          .status(400)
-          .render(editProfileTemplate, { pageTitle: editProfileTitle });
-      }
-
       const {
         session: {
           user: { _id, avatar_url, nickname },

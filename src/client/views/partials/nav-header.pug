@@ -12,6 +12,8 @@ nav.header-nav
                 a(href="/users/join") Join
         else 
             li.header-nav__li
+                a(href="/user-videos/upload") Upload Video
+            li.header-nav__li
                 a(href=`/users/${loggedInUser._id}`) 
                     if loggedInUser.avatar_url.startsWith("http")
                         img(src=loggedInUser.avatar_url).header-nav__avatar
