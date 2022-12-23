@@ -7,6 +7,7 @@ const videoRouter = express.Router();
 
 videoRouter
   .route("/upload")
+  .all(middlewares.onlyLoginMiddleware)
   .get(userVideoController.getUploadVideo)
   .post(
     middlewares.uploadUserVideoMiddleware,
