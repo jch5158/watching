@@ -1,0 +1,8 @@
+mixin user-video(video)
+    a(href=`/user-video/${video._id}`).user-video-mixin
+            img(src=video.thumbnail_url).user-video-mixin__thumb
+            div.user-video-mixin__data
+            span.user-video-mixin__title=video.title
+            div.user-video-mixin__meta
+                span #{video.owner.nickname} • 
+                span #{video.views} 회

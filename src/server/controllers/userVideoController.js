@@ -3,14 +3,29 @@ import UserVideo from "../models/UserVideo";
 import fileSystem from "../modules/fileSystem";
 
 const userVideoController = (() => {
+  const homeTitle = "Home";
   const uploadTitle = "Upload Video";
 
+  const homeTemplate = "screens/root/home";
   const uploadTemplate = "screens/user-videos/upload";
 
   const userVideoController = {
+    async getHomeVideos(req, res, next) {
+      try {
+        const videos = await UserVideo.find()
+          .sort({ createAt: "desc" })
+          .populate("owner");
+
+        res.render(homeTemplate, { pageTitle: homeTitle, videos });
+      } catch (error) {
+        return next(error);
+      }
+    },
+
     getUploadVideo(req, res) {
       res.render(uploadTemplate, { pageTitle: uploadTitle });
     },
+
     async postUploadVideo(req, res, next) {
       const {
         videoExists,

@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import middlewares from "../entry/middlewares";
+import middlewares from "../modules/middlewares";
 import userController from "../controllers/userController";
 
 const userRouter = express.Router();

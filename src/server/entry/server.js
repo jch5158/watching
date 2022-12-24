@@ -8,7 +8,7 @@ import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
 import userRouter from "../routers/userRouter";
 import userVideoRouter from "../routers/userVideoRouter";
-import middlewares from "./middlewares";
+import middlewares from "../modules/middlewares";
 
 const app = express();
 const logger = morgan("dev");

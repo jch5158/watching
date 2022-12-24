@@ -1,0 +1,31 @@
+.user-video-container {
+  display: flex;
+  justify-content: center;
+}
+
+.user-video-grid {
+  display: grid;
+  gap: 50px;
+  width: 80%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.user-video-mixin {
+  .user-video-mixin__thumb {
+    height: 140px;
+    border-radius: 7px;
+    width: 100%;
+  }
+  .user-video-mixin__data {
+    padding: 0px 15px;
+    .user-video-mixin__title {
+      font-size: 18px;
+      display: block;
+      margin-top: 10px;
+    }
+    .user-video-mixin__meta {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+  }
+}

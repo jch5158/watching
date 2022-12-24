@@ -1,9 +1,11 @@
 import express from "express";
 import { body } from "express-validator";
-import middlewares from "../entry/middlewares";
+import middlewares from "../modules/middlewares";
 import userVideoController from "../controllers/userVideoController";
 
 const videoRouter = express.Router();
+
+videoRouter.get("/:id([0-9a-f]{24})");
 
 videoRouter
   .route("/upload")

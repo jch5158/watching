@@ -1,8 +1,24 @@
 extends ../../templates/main
+include ../../mixins/user-video
 
 block headers
     include ../../partials/nav-header
 block contents
-    h1 Hello World
+    div.user-video-container
+        div.user-video-grid
+            each video in videos
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+                +user-video(video)
+
 block scripts 
     script(src="/assets/js/main.js") 
