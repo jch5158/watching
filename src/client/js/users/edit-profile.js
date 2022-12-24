@@ -11,15 +11,16 @@ const nicknameResultSpan = document.querySelector(
   ".user-form__nickname-result"
 );
 
-let fileUrl;
-
-const changeAvatarImgHandler = (event) => {
-  if (fileUrl) {
-    URL.revokeObjectURL(fileUrl);
-  }
-  const file = event.target.files[0];
-  fileUrl = URL.createObjectURL(file);
-  uploadAvatar.src = fileUrl;
+const changeAvatarImgHandler = () => {
+  let fileUrl;
+  return (event) => {
+    if (fileUrl) {
+      URL.revokeObjectURL(fileUrl);
+    }
+    const file = event.target.files[0];
+    fileUrl = URL.createObjectURL(file);
+    uploadAvatar.src = fileUrl;
+  };
 };
 
 const confirmNicknameHandler = async () => {
