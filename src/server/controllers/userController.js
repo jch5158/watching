@@ -3,7 +3,7 @@ import redisClient from "../entry/initRedis";
 import bcrypt from "bcrypt";
 import kakaoLogin from "../modules/kakaoLogin";
 import githubLogin from "../modules/githubLogin";
-import { fileExistsAndRemove } from "../modules/fileSystem";
+import fileSystem from "../modules/fileSystem";
 
 const userController = (() => {
   const loginTitle = "Login";
@@ -110,6 +110,7 @@ const userController = (() => {
             req.flash("success", joingSuccess);
             return res.redirect("/users/login");
           } catch (error) {
+            fileSystem.fileExistsAndRemove(path);
             return next(error);
           }
         }
@@ -322,7 +323,7 @@ const userController = (() => {
       try {
         const path = file?.path;
         if (path && !avatar_url.startsWith("http")) {
-          fileExistsAndRemove(avatar_url);
+          fileSystem.fileExistsAndRemove(avatar_url);
         }
 
         if (nickname !== newNickname) {
