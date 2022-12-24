@@ -1,4 +1,6 @@
+import User from "../models/User";
 import UserVideo from "../models/UserVideo";
+import fileSystem from "../modules/fileSystem";
 
 const userVideoController = (() => {
   const uploadTitle = "Upload Video";
@@ -13,7 +15,9 @@ const userVideoController = (() => {
       const {
         videoExists,
         thumbnailExists,
-        session: { user },
+        session: {
+          user: { _id },
+        },
         body: { title, description, hashtags },
         files,
       } = req;
@@ -29,17 +33,27 @@ const userVideoController = (() => {
       const { userVideo, thumbnail } = files;
 
       try {
-        await UserVideo.create({
+        const user = await User.findById(_id);
+        if (!user) {
+          throw new Error("User가 조회되지 않습니다.");
+        }
+
+        const video = await UserVideo.create({
           title,
           description,
           file_url: userVideo[0].path,
           thumbnail_url: thumbnail[0].path,
           hashtags: UserVideo.formatHashtags(hashtags),
+          owner: _id,
         });
 
+        user.user_videos.push(video._id);
+        user.save();
         req.flash("success", "비디오 업로드 성공");
-        return res.redirect(`/users/${user._id}`);
+        return res.redirect(`/users/${_id}`);
       } catch (error) {
+        fileSystem.fileExistsAndRemove(userVideo[0].path);
+        fileSystem.fileExistsAndRemove(thumbnail[0].path);
         return next(error);
       }
     },

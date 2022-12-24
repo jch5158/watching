@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema({
   avatar_url: { type: String, required: true },
   number_of_subscribers: { type: Number, required: true, default: 0 },
   create_at: { type: Date, required: true, default: Date.now },
+  user_videos: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "UserVideo",
+    },
+  ],
 });
 
 userSchema.pre("save", async function () {

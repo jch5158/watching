@@ -6,8 +6,10 @@ const userVideoSchema = mongoose.Schema({
   file_url: { type: String, required: true },
   thumbnail_url: { type: String, require: true },
   hashtags: [{ type: String, maxLength: 100 }],
+  views: { type: Number, required: true, default: 0 },
   likes: { type: Number, required: true, default: 0 },
   create_at: { type: Date, required: true, default: Date.now },
+  owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
 userVideoSchema.static("formatHashtags", (hashtags) => {
@@ -19,5 +21,5 @@ userVideoSchema.static("formatHashtags", (hashtags) => {
     .map((word) => (word.startsWith("#") ? word : `#${word}`));
 });
 
-const UserVideo = mongoose.model("UserVideo", userVideoSchema);
+const UserVideo = mongoose.model("User_Video", userVideoSchema);
 export default UserVideo;
