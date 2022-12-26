@@ -6,9 +6,13 @@ const userVideoSchema = mongoose.Schema({
   file_url: { type: String, required: true },
   thumbnail_url: { type: String, require: true },
   hashtags: [{ type: String, maxLength: 100 }],
+  duration_in_seconds: { type: Number, required: true },
   views: { type: Number, required: true, default: 0 },
-  likes: { type: Number, required: true, default: 0 },
   create_at: { type: Date, required: true, default: Date.now },
+  like: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User_Video_Like",
+  },
   owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 

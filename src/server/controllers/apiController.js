@@ -1,4 +1,6 @@
 import User from "../models/User";
+import UserVideo from "../models/UserVideo";
+import UserVideoLike from "../models/UserVideoLike";
 import redisClient from "../entry/initRedis";
 import { createRandToken } from "../modules/common";
 import { sendAuthenticodeEmail } from "../modules/mailer";
@@ -88,6 +90,124 @@ const apiController = (function () {
           { new: true }
         );
         return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postPlayUserVideo(req, res, next) {
+      const {
+        params: { id },
+      } = req;
+
+      const {
+        session: { userVideo },
+      } = req;
+
+      if (userVideo && id === userVideo.id) {
+        return res.sendStatus(200);
+      }
+
+      try {
+        const startTime = new Date().getTime();
+        const video = await UserVideo.findById(id);
+        if (!video) {
+          return res.sendStatus(400);
+        }
+
+        const userVideo = {
+          id,
+          startTime,
+        };
+
+        req.session.userVideo = userVideo;
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async putEndUserVideo(req, res, next) {
+      const {
+        params: { id },
+        session: { userVideo },
+      } = req;
+
+      if (!userVideo) {
+        return res.sendStatus(400);
+      }
+
+      if (userVideo.id !== id) {
+        return res.sendStatus(400);
+      }
+
+      try {
+        const { startTime } = userVideo;
+        const endTime = new Date().getTime();
+        const interval = endTime - startTime;
+
+        const video = await UserVideo.findById(id);
+        if (!video) {
+          return res.sendStatus(400);
+        }
+
+        if (video.duration_in_seconds / 2 > interval / 1000) {
+          return res.sendStatus(403);
+        }
+        video.views += 1;
+        await video.save();
+        delete req.session.userVideo;
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postLikeVideo(req, res, next) {
+      const {
+        session: {
+          user: { _id },
+        },
+        params: { id },
+      } = req;
+
+      try {
+        const isLike = await UserVideoLike.findOne({
+          $and: [{ users: _id }, { video: id }],
+        }).select("users.$");
+        if (isLike) {
+          return res.sendStatus(400);
+        }
+        await UserVideoLike.findOneAndUpdate(
+          { video: id },
+          { $inc: { count: 1 }, $push: { users: _id } }
+        );
+        res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postUnLikeVideo(req, res, next) {
+      const {
+        session: {
+          user: { _id },
+        },
+        params: { id },
+      } = req;
+
+      try {
+        const isLike = await UserVideoLike.findOne({
+          $and: [{ users: _id }, { video: id }],
+        }).select("users.$");
+        if (!isLike) {
+          return res.sendStatus(400);
+        }
+        await UserVideoLike.findOneAndUpdate(
+          { video: id },
+          { $inc: { count: -1 }, $pull: { users: _id } }
+        );
+        res.sendStatus(200);
       } catch (error) {
         return next(error);
       }

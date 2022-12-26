@@ -2,14 +2,15 @@ mixin user-video(video)
     div.user-video-mixin
         a(href=`/user-videos/${video._id}`)
             img(src=video.thumbnail_url).user-video-mixin__thumb
-        div.video-mixin__meta
+        div.user-video-mixin__meta
             div
                 a(href=`/users/${video.owner._id}`)
-                   img(src=video.owner.avatar_url).video-mixin__avatar
-            div.video-mixin__info
-                a(href=`/user-videos/${video._id}`).video-mixin__title sdafaksldfjalksdfjl;kasdjf;lkasdjf;lkasdjlkf
+                   img(src=video.owner.avatar_url).user-video-mixin__avatar
+            div.user-video-mixin__info
+                a(href=`/user-videos/${video._id}`).user-video-mixin__title #{video.title}
                 div
-                    a(href=`/users/${video.owner._id}`).video-mixin__nickname
-                        span #{video.owner.nickname} • 
-                    a(href=`/user-videos/${video._id}`) #{video.views} 회
+                    a(href=`/users/${video.owner._id}`).user-video-mixin__nickname
+                        span #{video.owner.nickname} 
+                    span • 
+                    a(href=`/user-videos/${video._id}`) #{video.views}회
                 a(href=`/user-videos/${video._id}`) #{new Date(video.create_at).toLocaleDateString("ko-kr", {year: 'numeric', month: 'long', day: 'numeric'})}

@@ -10,6 +10,7 @@ module.exports = {
     "users/edit-profile": "./src/client/js/users/edit-profile.js",
     "users/edit-password": "./src/client/js/users/edit-password.js",
     "user-videos/upload": "./src/client/js/user-videos/upload.js",
+    "user-videos/watch": "./src/client/js/user-videos/watch.js",
     "modules/usersApi": "./src/client/js/modules/usersApi.js",
     "validators/userValidator": "./src/client/js/validators/userValidator.js",
   },

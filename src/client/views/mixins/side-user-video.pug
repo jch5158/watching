@@ -1,0 +1,7 @@
+mixin side-user-vide 
+    a(href=`/user-videos/${video._id}`).side-user-video-mixin
+        img(src=`/${video.thumbnail_url}`).side-user-video-mixin__thumb
+        div.side-user-video-mixin__info
+            span.side-user-video-mixin__title #{video.title}
+            span #{video.owner.nickname} • #{video.views}회
+            span #{new Date(video.create_at).toLocaleDateString("ko-kr", {year: 'numeric', month: 'long', day: 'numeric'})}

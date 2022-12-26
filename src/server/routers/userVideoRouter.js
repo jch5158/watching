@@ -5,7 +5,7 @@ import userVideoController from "../controllers/userVideoController";
 
 const videoRouter = express.Router();
 
-videoRouter.get("/:id([0-9a-f]{24})");
+videoRouter.get("/:id([0-9a-f]{24})", userVideoController.getWatchVideo);
 
 videoRouter
   .route("/upload")

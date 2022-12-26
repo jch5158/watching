@@ -32,4 +32,19 @@ apiRouter
   .post(apiController.postConfirmNickname)
   .put(middlewares.alreadySetNicknameMiddleware, apiController.putNickname);
 
+apiRouter
+  .route("/user-videos/:id([0-9a-f]{24})")
+  .post(apiController.postPlayUserVideo)
+  .put(apiController.putEndUserVideo);
+
+apiRouter
+  .route("/user-videos/:id([0-9a-f]{24})/like")
+  .all(middlewares.onlyLoginMiddleware)
+  .post(apiController.postLikeVideo);
+
+apiRouter
+  .route("/user-videos/:id([0-9a-f]{24})/unlike")
+  .all(middlewares.onlyLoginMiddleware)
+  .post(apiController.postUnLikeVideo);
+
 export default apiRouter;

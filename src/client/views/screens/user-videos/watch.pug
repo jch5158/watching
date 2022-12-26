@@ -1,0 +1,69 @@
+extends ../../templates/main
+include ../../mixins/side-user-video
+
+block headers
+    include ../../partials/nav-header
+block contents 
+    div.watch-user-video
+        div 
+            div(data-id=video._id).watch-user-video__container
+                video(src=`/${video.file_url}`, controls="controls").watch-user-video__video
+        div
+            each video in videos
+                +side-user-vide(vide)
+                +side-user-vide(vide)
+                +side-user-vide(vide)
+                +side-user-vide(vide)
+                +side-user-vide(vide)
+                +side-user-vide(vide)
+    div.watch-user-video__info
+        span.watch-user-video__title=video.title
+        div.watch-user-video__user-info
+            div
+                a(href=`/users/${video.owner._id}`) 
+                    img(src=video.owner.avatar_url).watch-user-video__avatar
+                div.watch-user-video__owner-info
+                    a(href=`/users/${video.owner._id}`) 
+                        span=video.owner.nickname
+                    span #{video.owner.number_of_subscribers} 명
+            div 
+                if isLike
+                    button.watch-user-video__like-btn.unlike
+                        span #{video.like.count.toLocaleString('ko-KR')}
+                        span 좋아요
+                        i.far.fa-thumbs-up.fa-lg    
+                else 
+                    button.watch-user-video__like-btn
+                        span #{video.like.count.toLocaleString('ko-KR')}
+                        span 좋아요
+                        i.far.fa-thumbs-up.fa-lg    
+                button.watch-user-video__subscribe-btn 구독
+        div.watch-user-video__meta
+            div
+                span 조회수 #{video.views}회
+                span  • 
+                span #{new Date(video.create_at).toLocaleDateString("ko-kr", {year: 'numeric', month: 'long', day: 'numeric'})}
+            div
+                span #{video.description}
+            div
+                each hashtag in video.hashtags
+                    a(href="") 
+                        span.watch-user-video__hashtags #{hashtag}, 
+    div.user-video-comments
+        span.user-video-comments__number-of-comments 댓글 599개
+        div.user-video-comments__comment-box
+            div
+                img(src=video.owner.avatar_url).user-video-comments__avatar
+                span.user-video-comments__nickname #{video.owner.nickname}
+            div 
+                input(type="text", placeholder="댓글 추가...", maxLength="150").user-video-comments__input
+                button.user-video-comments__input-btn 댓글
+        
+        //- mixin 처리
+        div.user-video-comments__comments
+            img(src=video.owner.avatar_url).user-video-comments__comment-avatar
+            div
+                span.user-video-comments__comment-nickname #{video.owner.nickname} • 2020년 12월 25일
+                span asdfasdfsdafasdfasdklfj
+block scripts 
+    script(src="/assets/js/user-videos/watch.js")  

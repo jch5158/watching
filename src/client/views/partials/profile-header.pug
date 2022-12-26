@@ -5,7 +5,7 @@ nav.header-nav
         //- li
         //-     a(href="/search")
         //-         i.fas.fa-search.header-nav__i
-        if String(loggedInUser._id) === String(user._id)
+        if loggedInUser && String(loggedInUser._id) === String(user._id)
             li.header-nav__li
                 a(href="/user-videos/upload") Upload Video
             li.header-nav__li 

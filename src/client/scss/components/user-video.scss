@@ -18,20 +18,20 @@
     border-radius: 7px;
     width: 100%;
   }
-  .video-mixin__meta {
+  .user-video-mixin__meta {
     display: flex;
     align-items: flex-start;
     margin-top: 10px;
-    .video-mixin__avatar {
+    .user-video-mixin__avatar {
       width: 35px;
       height: 35px;
       border-radius: 50%;
     }
-    .video-mixin__info {
+    .user-video-mixin__info {
       display: flex;
       flex-direction: column;
       margin-left: 10px;
-      .video-mixin__title {
+      .user-video-mixin__title {
         color: white;
         margin-bottom: 5px;
         font-size: 18px;
@@ -40,26 +40,13 @@
         text-overflow: ellipsis;
       }
 
-      .video-mixin__nickname:hover {
+      .user-video-mixin__nickname:hover {
         color: white;
       }
 
-      div {
+      > div {
         margin-bottom: 3px;
       }
     }
   }
-
-  // .user-video-mixin__data {
-  //   padding: 0px 15px;
-  //   .user-video-mixin__title {
-  //     font-size: 18px;
-  //     display: block;
-  //     margin-top: 10px;
-  //   }
-  //   .user-video-mixin__meta {
-  //     margin-top: 5px;
-  //     font-size: 12px;
-  //   }
-  // }
 }

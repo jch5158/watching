@@ -13,11 +13,13 @@
 @import "./components/user-forms.scss";
 @import "./components/video-forms.scss";
 @import "./components/user-video.scss";
+@import "./components/side-user-video.scss";
 
 // screens
-@import "./screens/home.scss";
-@import "./screens/error.scss";
-@import "./screens/profile.scss";
+@import "./screens/root/home.scss";
+@import "./screens/root/error.scss";
+@import "./screens/users/profile.scss";
+@import "./screens/user-videos/watch.scss";
 
 html {
   min-height: 100vh;

@@ -1,6 +1,8 @@
 import User from "../models/User";
 import UserVideo from "../models/UserVideo";
 import fileSystem from "../modules/fileSystem";
+import { getVideoDurationInSeconds } from "get-video-duration";
+import UserVideoLike from "../models/UserVideoLike";
 
 const userVideoController = (() => {
   const homeTitle = "Home";
@@ -8,6 +10,7 @@ const userVideoController = (() => {
 
   const homeTemplate = "screens/root/home";
   const uploadTemplate = "screens/user-videos/upload";
+  const watchTemplate = "screens/user-videos/watch";
 
   const userVideoController = {
     async getHomeVideos(req, res, next) {
@@ -46,30 +49,80 @@ const userVideoController = (() => {
         return res.render(uploadTemplate, { pageTitle: uploadTitle });
       }
       const { userVideo, thumbnail } = files;
-
       try {
-        const user = await User.findById(_id);
+        const user = await User.exists({ _id });
         if (!user) {
           throw new Error("User가 조회되지 않습니다.");
         }
-
+        const duration = await getVideoDurationInSeconds(userVideo[0].path);
         const video = await UserVideo.create({
           title,
           description,
           file_url: userVideo[0].path,
           thumbnail_url: thumbnail[0].path,
           hashtags: UserVideo.formatHashtags(hashtags),
+          duration_in_seconds: duration,
           owner: _id,
         });
 
-        user.user_videos.push(video._id);
-        user.save();
+        const videoLike = await UserVideoLike.create({
+          video: video._id,
+        });
+
+        video.like = videoLike._id;
+        await Promise.all([
+          User.findByIdAndUpdate(_id, { $push: { user_videos: video._id } }),
+          video.save(),
+        ]);
         req.flash("success", "비디오 업로드 성공");
         return res.redirect(`/users/${_id}`);
       } catch (error) {
         fileSystem.fileExistsAndRemove(userVideo[0].path);
         fileSystem.fileExistsAndRemove(thumbnail[0].path);
         return next(error);
+      }
+    },
+
+    async getWatchVideo(req, res, next) {
+      const {
+        session: {
+          user: { _id },
+        },
+        params: { id },
+      } = req;
+
+      try {
+        const video = await UserVideo.findById(id).populate("owner").populate({
+          path: "like",
+          select: "count",
+        });
+        if (!video) {
+          return next();
+        }
+
+        const isLike = (await UserVideoLike.findOne(
+          {
+            users: { $exists: true, $in: [_id] },
+          },
+          "users.$"
+        ))
+          ? true
+          : false;
+
+        console.log(isLike);
+        const videos = await UserVideo.find();
+        if (!videos) {
+          return next();
+        }
+
+        res.render(watchTemplate, {
+          pageTitle: `${video.title}`,
+          video,
+          videos,
+          isLike,
+        });
+      } catch (error) {
+        next(error);
       }
     },
   };
