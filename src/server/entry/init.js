@@ -3,11 +3,9 @@ import "./initDB";
 import "./initRedis";
 import "../models/User";
 import "../models/UserVideo";
-import "../models/UserVideoLike";
 import app from "./server";
 
 import User from "../models/User";
-import UserVideoLike from "../models/UserVideoLike";
 import UserVideo from "../models/UserVideo";
 
 // PORT 넘버
@@ -53,4 +51,18 @@ app.listen(PORT, () => console.log(`Server listening, PORT : ${PORT}`));
   //     "users.$"
   //   );
   //   console.log(exists);
+  // const ret = await UserVideo.findById("63a9c5332a7e71e944e49866").populate({
+  //   path: "likes",
+  //   populate: {
+  //     path: "users",
+  //     select: "_id name",
+  //     match: { _id: "63a97b7f537720ce451cf5df" },
+  //   },
+  // });
+  // console.log(ret.likes);
+  //63a97b7f537720ce451cf5d0
+  // await UserVideo.findByIdAndUpdate("63a9c5332a7e71e944e49866", {
+  //   $push: { "likes.users": "63a99c040328c0ece379ded3" },
+  //   $inc: { "likes.count": 1 },
+  // });
 })();

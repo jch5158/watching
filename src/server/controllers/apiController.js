@@ -1,6 +1,5 @@
 import User from "../models/User";
 import UserVideo from "../models/UserVideo";
-import UserVideoLike from "../models/UserVideoLike";
 import redisClient from "../entry/initRedis";
 import { createRandToken } from "../modules/common";
 import { sendAuthenticodeEmail } from "../modules/mailer";
@@ -172,16 +171,26 @@ const apiController = (function () {
       } = req;
 
       try {
-        const isLike = await UserVideoLike.findOne({
-          $and: [{ users: _id }, { video: id }],
-        }).select("users.$");
-        if (isLike) {
+        const video = await UserVideo.findById(id)
+          .populate({
+            path: "likes",
+            populate: {
+              path: "users",
+              select: "_id",
+              match: { _id },
+            },
+          })
+          .select("likes");
+
+        if (video.likes.users.length !== 0) {
           return res.sendStatus(400);
         }
-        await UserVideoLike.findOneAndUpdate(
-          { video: id },
-          { $inc: { count: 1 }, $push: { users: _id } }
-        );
+
+        await UserVideo.findByIdAndUpdate(id, {
+          $push: { "likes.users": _id },
+          $inc: { "likes.count": 1 },
+        });
+
         res.sendStatus(200);
       } catch (error) {
         return next(error);
@@ -197,16 +206,26 @@ const apiController = (function () {
       } = req;
 
       try {
-        const isLike = await UserVideoLike.findOne({
-          $and: [{ users: _id }, { video: id }],
-        }).select("users.$");
-        if (!isLike) {
+        const video = await UserVideo.findById(id)
+          .populate({
+            path: "likes",
+            populate: {
+              path: "users",
+              select: "_id",
+              match: { _id },
+            },
+          })
+          .select("likes");
+
+        if (video.likes.users.length === 0) {
           return res.sendStatus(400);
         }
-        await UserVideoLike.findOneAndUpdate(
-          { video: id },
-          { $inc: { count: -1 }, $pull: { users: _id } }
-        );
+
+        await UserVideo.findByIdAndUpdate(id, {
+          $pull: { "likes.users": _id },
+          $inc: { "likes.count": -1 },
+        });
+
         res.sendStatus(200);
       } catch (error) {
         return next(error);

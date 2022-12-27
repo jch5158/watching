@@ -29,12 +29,12 @@ block contents
             div 
                 if isLike
                     button.watch-user-video__like-btn.unlike
-                        span #{video.like.count.toLocaleString('ko-KR')}
+                        span #{video.likes.count.toLocaleString('ko-KR')}
                         span 좋아요
                         i.far.fa-thumbs-up.fa-lg    
                 else 
                     button.watch-user-video__like-btn
-                        span #{video.like.count.toLocaleString('ko-KR')}
+                        span #{video.likes.count.toLocaleString('ko-KR')}
                         span 좋아요
                         i.far.fa-thumbs-up.fa-lg    
                 button.watch-user-video__subscribe-btn 구독

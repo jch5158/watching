@@ -9,9 +9,9 @@ const userVideoSchema = mongoose.Schema({
   duration_in_seconds: { type: Number, required: true },
   views: { type: Number, required: true, default: 0 },
   create_at: { type: Date, required: true, default: Date.now },
-  like: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User_Video_Like",
+  likes: {
+    count: { type: Number, required: true, default: 0 },
+    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });

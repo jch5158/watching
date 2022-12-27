@@ -2,7 +2,6 @@ import User from "../models/User";
 import UserVideo from "../models/UserVideo";
 import fileSystem from "../modules/fileSystem";
 import { getVideoDurationInSeconds } from "get-video-duration";
-import UserVideoLike from "../models/UserVideoLike";
 
 const userVideoController = (() => {
   const homeTitle = "Home";
@@ -65,16 +64,10 @@ const userVideoController = (() => {
           owner: _id,
         });
 
-        const videoLike = await UserVideoLike.create({
-          video: video._id,
+        await User.findByIdAndUpdate(_id, {
+          $push: { user_videos: video._id },
         });
-
-        video.like = videoLike._id;
-        await Promise.all([
-          User.findByIdAndUpdate(_id, { $push: { user_videos: video._id } }),
-          video.save(),
-        ]);
-        req.flash("success", "비디오 업로드 성공");
+        video.save(), req.flash("success", "비디오 업로드 성공");
         return res.redirect(`/users/${_id}`);
       } catch (error) {
         fileSystem.fileExistsAndRemove(userVideo[0].path);
@@ -92,24 +85,22 @@ const userVideoController = (() => {
       } = req;
 
       try {
-        const video = await UserVideo.findById(id).populate("owner").populate({
-          path: "like",
-          select: "count",
-        });
+        const video = await UserVideo.findById(id)
+          .populate("owner")
+          .populate({
+            path: "likes",
+            populate: {
+              path: "users",
+              select: "_id",
+              match: { _id },
+            },
+          });
         if (!video) {
           return next();
         }
 
-        const isLike = (await UserVideoLike.findOne(
-          {
-            users: { $exists: true, $in: [_id] },
-          },
-          "users.$"
-        ))
-          ? true
-          : false;
-
-        console.log(isLike);
+        console.log(video.likes.users.length);
+        const isLike = video.likes.users.length ? true : false;
         const videos = await UserVideo.find();
         if (!videos) {
           return next();
