@@ -1,7 +1,7 @@
 .user-video-sub-comment {
   margin-top: 25px;
   display: flex;
-  width: 95%;
+  width: 100%;
   .user-video-sub-comment__avatar {
     width: 45px;
     height: 45px;
@@ -11,6 +11,7 @@
   .user-video-sub-comment__user {
     display: flex;
     flex-direction: column;
+    width: 100%;
     margin-left: 20px;
 
     .user-video-sub-comment__user-info {
@@ -18,7 +19,7 @@
       flex-direction: column;
       margin-bottom: 15px;
 
-      .user-video-sub-comment__tag {
+      .user-video-sub-comment__tag-text {
         color: #3587cf;
         margin-right: 10px;
       }

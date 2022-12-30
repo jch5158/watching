@@ -46,15 +46,14 @@ const userVideoApi = (() => {
       });
     },
 
-    async videoCommentLikeAddSub(id, text, toUserId) {
-      alert(text);
+    async videoCommentAddSub(id, text, toUserId) {
       return fetch(`/api/user-video-comments/${id}/sub`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
 
-        body: JSON.stringify({ toUserId, text }),
+        body: JSON.stringify({ text, toUserId }),
       });
     },
 

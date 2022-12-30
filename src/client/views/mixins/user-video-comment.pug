@@ -16,9 +16,11 @@ mixin user-video-comment(user, comment)
                             i.far.fa-thumbs-up.fa-lg
                             span #{comment.likeCount}
                         button.user-video-comment__sub-visible-btn 답글 
-            div.user-video-comment-sub-container.display-none
-                input(type="text", placeholder="댓글 추가..." ,maxLength="150").user-video-comment-sub-input
-                button(data-id=comment._id).user-video-comment__sub-btn 댓글
+            div.user-video-comment__sub-container.display-none
+                span
+                div
+                    input(type="text", placeholder="댓글 추가..." ,maxLength="150").user-video-comment__sub-input
+                    button(data-id=comment._id).user-video-comment__sub-btn 댓글
             div.user-video-comment-sub
                 button(data-id=comment._id).user-video-comment__add-sub-comment-btn
                     i.fas.fa-caret-down.fa-lg
@@ -37,13 +39,18 @@ mixin user-video-comment(user, comment)
             //-                 i.far.fa-thumbs-up.fa-lg
             //-                 span #{comment.likeCount}
             //-             button 답글
+            //-         div.user-video-comment__sub-container
+            //-             span.user-video-comment__user-tag @jch5158
+            //-             div
+            //-                 input(type="text", placeholder="댓글 추가..." ,maxLength="150").user-video-comment__sub-input
+            //-                 button(data-id=comment._id).user-video-comment__sub-btn 댓글
             //- div.user-video-sub-comment
             //-     img(src=user.avatar_url).user-video-sub-comment__avatar
             //-     div.user-video-sub-comment__user
             //-         div.user-video-sub-comment__user-info 
             //-             span #{user.nickname} • #{new Date(comment.create_at).toLocaleDateString("ko-kr", {year: 'numeric', month: 'long', day: 'numeric', hour:'2-digit'})}
             //-             div
-            //-                 sapn.user-video-sub-comment__tag @jch5158
+            //-                 sapn.user-video-sub-comment__tag-text @jch5158
             //-                 span #{comment.text}
             //-         div.user-video-sub-comment__btns
             //-             button.user-video-sub-comment__like-btn

@@ -414,6 +414,8 @@ const apiController = (function () {
         },
       } = req;
 
+      console.log("Asdf");
+
       try {
         const exists = await UserVideoComment.exists({ _id: id });
         if (!exists) {
@@ -423,6 +425,7 @@ const apiController = (function () {
         let subComment;
         const regex = /[0-9a-f]{24}/;
         if (regex.test(toUserId)) {
+          console.log("태그 댓글 테스트");
           subComment = await UserVideoSubComment.create({
             text,
             to_user: toUserId,
@@ -458,12 +461,20 @@ const apiController = (function () {
           .select("sub_comments")
           .populate({
             path: "sub_comments",
-            select: "-comment -likes",
+            select: "-likes",
             populate: {
               path: "owner",
               select: "nickname avatar_url",
             },
+          })
+          .populate({
+            path: "sub_comments",
+            populate: {
+              path: "to_user",
+              select: "nickname",
+            },
           });
+
         if (!comment) {
           return res.sendStatus(400);
         }

@@ -37,12 +37,18 @@ const makeSubComments = (likeCounts, subComments, isLikes, parentElement) => {
     const subUserInfoDiv = document.createElement("div");
     const infoSpan = document.createElement("span");
     const infoDiv = document.createElement("div");
+    const infoDivTextTag = document.createElement("span");
     const infoDivTextSpan = document.createElement("span");
     const subCommentBtnsDiv = document.createElement("div");
     const subBtn1 = document.createElement("button");
     const thumbIcon = document.createElement("i");
     const likeSpan = document.createElement("span");
     const subBtn2 = document.createElement("button");
+    const subContainerDiv = document.createElement("div");
+    const userTagSpan = document.createElement("span");
+    const subDiv = document.createElement("div");
+    const subCommentInput = document.createElement("input");
+    const subCommentBtn = document.createElement("button");
 
     subComDiv.classList.add("user-video-sub-comment");
     avatar.classList.add("user-video-sub-comment__avatar");
@@ -50,6 +56,15 @@ const makeSubComments = (likeCounts, subComments, isLikes, parentElement) => {
     subUserInfoDiv.classList.add("user-video-sub-comment__user-info");
     subCommentBtnsDiv.classList.add("user-video-sub-comment__btns");
     subBtn1.classList.add("user-video-sub-comment__like-btn");
+    subContainerDiv.classList.add("user-video-comment__sub-container");
+    subContainerDiv.classList.add("display-none");
+    userTagSpan.classList.add("user-video-comment__user-tag");
+    subCommentInput.classList.add("user-video-comment__sub-input");
+    subCommentBtn.classList.add("user-video-comment__sub-btn");
+
+    subCommentInput.setAttribute("type", "text");
+    subCommentInput.setAttribute("placeholder", "댓글 추가...");
+    subCommentInput.setAttribute("maxLength", "150");
 
     if (isLikes[i]) {
       thumbIcon.classList.add("fas");
@@ -58,6 +73,7 @@ const makeSubComments = (likeCounts, subComments, isLikes, parentElement) => {
       thumbIcon.classList.add("far");
       subBtn1.addEventListener("click", likeSubCommentHandler);
     }
+    subBtn2.addEventListener("click", subCommentInputVisibleHandler);
 
     thumbIcon.classList.add("fa-thumbs-up");
     thumbIcon.classList.add("fa-lg");
@@ -75,10 +91,20 @@ const makeSubComments = (likeCounts, subComments, isLikes, parentElement) => {
     likeSpan.innerText = likeCounts[i];
     subBtn2.innerText = "답글";
     subBtn1.dataset.id = subComments[i]._id;
+    userTagSpan.dataset.id = subComments[i].owner._id;
+    userTagSpan.innerText = `@${subComments[i].owner.nickname}`;
+    subCommentBtn.innerText = "댓글";
+    subCommentBtn.dataset.id = subComments[i].comment;
+    subCommentBtn.addEventListener("click", submitSubCommentHandler);
 
     subBtn1.appendChild(thumbIcon);
     subBtn1.appendChild(likeSpan);
 
+    if (subComments[i].to_user) {
+      infoDivTextTag.innerText = `@${subComments[i].to_user.nickname}`;
+      infoDivTextTag.classList.add("user-video-sub-comment__tag-text");
+    }
+    infoDiv.appendChild(infoDivTextTag);
     infoDiv.appendChild(infoDivTextSpan);
 
     subCommentBtnsDiv.appendChild(subBtn1);
@@ -87,8 +113,15 @@ const makeSubComments = (likeCounts, subComments, isLikes, parentElement) => {
     subUserInfoDiv.appendChild(infoSpan);
     subUserInfoDiv.appendChild(infoDiv);
 
+    subContainerDiv.appendChild(userTagSpan);
+    subContainerDiv.appendChild(subDiv);
+
     subUserDiv.appendChild(subUserInfoDiv);
     subUserDiv.appendChild(subCommentBtnsDiv);
+    subUserDiv.appendChild(subContainerDiv);
+
+    subDiv.appendChild(subCommentInput);
+    subDiv.appendChild(subCommentBtn);
 
     subComDiv.appendChild(avatar);
     subComDiv.appendChild(subUserDiv);
@@ -286,13 +319,15 @@ const submitSubCommentHandler = async (event) => {
   const {
     target: {
       previousSibling,
+      parentElement,
       dataset: { id },
     },
   } = event;
 
-  const res = await userVideoApi.videoCommentLikeAddSub(
+  const res = await userVideoApi.videoCommentAddSub(
     id,
-    previousSibling.value
+    previousSibling.value,
+    parentElement.previousSibling.dataset.id
   );
   if (res.status !== 200) {
     return;
@@ -328,7 +363,6 @@ const addSubCommentHandler = async (event) => {
 const removeSubCommentHandler = async (event) => {
   const {
     target: {
-      dataset: { id },
       parentElement: { parentElement },
       children,
     },

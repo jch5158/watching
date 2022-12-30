@@ -74,11 +74,25 @@
       }
     }
 
-    .user-video-comment-sub-container {
-      .user-video-comment-sub-input {
-        background-color: #0f0f0f;
-        margin-top: 15px;
+    .user-video-comment__sub-container {
+      display: flex;
+      flex-direction: column;
+      .user-video-comment__user-tag {
+        display: flex;
+        align-items: center;
+        margin-top: 5px;
+        margin-bottom: 0px;
+        color: #3587cf;
+      }
+
+      .user-video-comment__user-tag,
+      .user-video-comment__sub-input {
         padding: 7px 10px;
+      }
+
+      .user-video-comment__sub-input {
+        background-color: #0f0f0f;
+        margin-top: 10px;
         font-size: 17px;
         border: none;
         border-radius: 0px;
