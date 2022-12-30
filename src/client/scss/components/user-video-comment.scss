@@ -1,0 +1,102 @@
+.user-video-comment {
+  margin-top: 50px;
+  display: flex;
+  .user-video-comment__comment-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+  > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-left: 25px;
+    width: 90%;
+    span:first-child {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    span:nth-child(2) {
+      margin-bottom: 10px;
+    }
+
+    .user-video-comment__state-btn {
+      display: flex;
+      align-items: center;
+      > button {
+        padding: 5px 10px;
+        margin-right: 10px;
+        height: 30px;
+        background-color: transparent;
+        border: transparent;
+        color: white;
+        border-radius: 9999px;
+        cursor: pointer;
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.2);
+        }
+      }
+
+      .user-video-comment__unlike-btn,
+      .user-video-comment__like-btn {
+        > i {
+          pointer-events: none;
+        }
+        > span {
+          pointer-events: none;
+          margin-left: 7px;
+        }
+      }
+    }
+
+    .user-video-comment-sub {
+      margin-top: 15px;
+      .user-video-comment__add-sub-comment-btn {
+        padding: 5px 10px;
+        border-radius: 9999px;
+        background-color: transparent;
+        border: transparent;
+        color: #3ea6ff;
+        cursor: pointer;
+        &:hover {
+          background-color: rgba(#3ea6ff, 0.2);
+        }
+        > i {
+          margin-right: 10px;
+          pointer-events: none !important;
+        }
+        > span:nth-child(2) {
+          margin-right: 5px;
+        }
+        span {
+          pointer-events: none !important;
+        }
+      }
+    }
+
+    .user-video-comment-sub-container {
+      .user-video-comment-sub-input {
+        background-color: #0f0f0f;
+        margin-top: 15px;
+        padding: 7px 10px;
+        font-size: 17px;
+        border: none;
+        border-radius: 0px;
+        border-bottom: 1px solid white;
+      }
+      .user-video-comment__sub-btn {
+        width: 80px;
+        height: 45px;
+        font-weight: 600;
+        margin-left: 10px;
+        border-radius: 9999px;
+        &:hover {
+          cursor: pointer;
+        }
+        &:active {
+          background-color: rgba(170, 170, 170, 1);
+        }
+      }
+    }
+  }
+}

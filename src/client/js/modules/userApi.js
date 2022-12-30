@@ -49,6 +49,18 @@ const userApi = (() => {
         body: JSON.stringify({ email, authenticode }),
       });
     },
+
+    async subscribe(id) {
+      return await fetch(`/api/users/${id}/subscribe`, {
+        method: "POST",
+      });
+    },
+
+    async unsubscribe(id) {
+      return await fetch(`/api/users/${id}/unsubscribe`, {
+        method: "POST",
+      });
+    },
   };
 
   return userApi;

@@ -1,5 +1,5 @@
 import userValidator from "../validators/userValidator";
-import userApi from "../modules/usersApi";
+import userApi from "../modules/userApi";
 
 const emailInput = document.querySelector(".user-form__email");
 const reqAuthenticodeBtn = document.querySelector(

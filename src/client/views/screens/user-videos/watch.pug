@@ -1,5 +1,6 @@
 extends ../../templates/main
 include ../../mixins/side-user-video
+include ../../mixins/user-video-comment
 
 block headers
     include ../../partials/nav-header
@@ -18,26 +19,36 @@ block contents
                 +side-user-vide(vide)
     div.watch-user-video__info
         span.watch-user-video__title=video.title
-        div.watch-user-video__user-info
+        div(data-id=video.owner._id).watch-user-video__user-info
             div
-                a(href=`/users/${video.owner._id}`) 
-                    img(src=video.owner.avatar_url).watch-user-video__avatar
+                a(href=`/users/${video.owner._id}`)
+                    if video.owner.avatar_url.startsWith("http") 
+                        img(src=video.owner.avatar_url).watch-user-video__avatar
+                    else 
+                        img(src=`/${video.owner.avatar_url}`).watch-user-video__avatar
                 div.watch-user-video__owner-info
                     a(href=`/users/${video.owner._id}`) 
                         span=video.owner.nickname
-                    span #{video.owner.number_of_subscribers} 명
-            div 
-                if isLike
-                    button.watch-user-video__like-btn.unlike
-                        span #{video.likes.count.toLocaleString('ko-KR')}
-                        span 좋아요
-                        i.far.fa-thumbs-up.fa-lg    
-                else 
-                    button.watch-user-video__like-btn
-                        span #{video.likes.count.toLocaleString('ko-KR')}
-                        span 좋아요
-                        i.far.fa-thumbs-up.fa-lg    
-                button.watch-user-video__subscribe-btn 구독
+                    div 
+                        span.watch-user-video__subscribe_cnt #{video.owner.subscriberCount}
+                        span  명
+            if isLoggedIn
+                div 
+                    if isLiked
+                        button.watch-user-video__like-btn.clicked
+                            span #{video.likeCount.toLocaleString('ko-KR')}
+                            span 좋아요
+                            i.far.fa-thumbs-up.fa-lg    
+                    else 
+                        button.watch-user-video__like-btn
+                            span #{video.likeCount.toLocaleString('ko-KR')}
+                            span 좋아요
+                            i.far.fa-thumbs-up.fa-lg    
+                    if String(loggedInUser._id) !== String(video.owner._id)
+                        if isSubscribed
+                            button.watch-user-video__subscribe-btn.clicked 구독중
+                        else 
+                            button.watch-user-video__subscribe-btn 구독
         div.watch-user-video__meta
             div
                 span 조회수 #{video.views}회
@@ -50,20 +61,19 @@ block contents
                     a(href="") 
                         span.watch-user-video__hashtags #{hashtag}, 
     div.user-video-comments
-        span.user-video-comments__number-of-comments 댓글 599개
-        div.user-video-comments__comment-box
-            div
-                img(src=video.owner.avatar_url).user-video-comments__avatar
-                span.user-video-comments__nickname #{video.owner.nickname}
-            div 
-                input(type="text", placeholder="댓글 추가...", maxLength="150").user-video-comments__input
-                button.user-video-comments__input-btn 댓글
-        
-        //- mixin 처리
-        div.user-video-comments__comments
-            img(src=video.owner.avatar_url).user-video-comments__comment-avatar
-            div
-                span.user-video-comments__comment-nickname #{video.owner.nickname} • 2020년 12월 25일
-                span asdfasdfsdafasdfasdklfj
+        span.user-video-comments__number-of-comments 댓글 #{video.comments.length}개
+        if isLoggedIn
+            div(data-id=loggedInUser._id).user-video-comments__comment-box
+                div
+                    if loggedInUser.avatar_url.startsWith("http")
+                        img(src=loggedInUser.avatar_url).user-video-comments__avatar
+                    else 
+                        img(src=`/${loggedInUser.avatar_url}`).user-video-comments__avatar
+                    span.user-video-comments__nickname #{loggedInUser.nickname}
+                div 
+                    input(type="text", placeholder="댓글 추가...", maxLength="150").user-video-comments__input
+                    button.user-video-comments__input-btn 댓글
+        each comment in video.comments
+            +user-video-comment(comment.owner, comment)
 block scripts 
     script(src="/assets/js/user-videos/watch.js")  

@@ -1,5 +1,5 @@
 import userValidator from "../validators/userValidator";
-import userApi from "../modules/usersApi";
+import userApi from "../modules/userApi";
 
 const uploadAvatarInput = document.querySelector(".avatar-upload__input");
 const uploadAvatar = document.querySelector(".avatar-upload__avatar");

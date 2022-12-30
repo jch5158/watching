@@ -3,6 +3,11 @@ import UserVideo from "../models/UserVideo";
 import redisClient from "../entry/initRedis";
 import { createRandToken } from "../modules/common";
 import { sendAuthenticodeEmail } from "../modules/mailer";
+import Subscriber from "../models/Subscriber";
+import UserVideoComment from "../models/UserVideoComment";
+import SubscribeUser from "../models/SubscribeUser";
+import UserVideoSubComment from "../models/UserVideoSubComment";
+import mongooseQuery from "../modules/mongooseQuery";
 
 const apiController = (function () {
   const apiController = {
@@ -94,6 +99,96 @@ const apiController = (function () {
       }
     },
 
+    async subscribeChannel(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      if (id === user._id) {
+        return res.sendStatus(400);
+      }
+
+      try {
+        const [isSubscriber, isSubscribeUsers] = await Promise.all([
+          Subscriber.exists({ owner: id, users: user._id }),
+          SubscribeUser.exists({ owner: user._id, users: id }),
+        ]);
+
+        if (isSubscriber || isSubscribeUsers) {
+          return res.sendStatus(400);
+        }
+
+        await Promise.all([
+          Subscriber.findOneAndUpdate(
+            { owner: id },
+            {
+              $push: {
+                users: user._id,
+              },
+            }
+          ),
+          SubscribeUser.findOneAndUpdate(
+            { owner: user._id },
+            {
+              $push: {
+                users: id,
+              },
+            }
+          ),
+        ]);
+
+        res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async unsubscribeChannel(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      if (id === user._id) {
+        res.sendStatus(400);
+      }
+
+      try {
+        const [isSubscriber, isSubscribeUsers] = await Promise.all([
+          Subscriber.exists({ owner: id, users: user._id }),
+          SubscribeUser.exists({ owner: user._id, users: id }),
+        ]);
+
+        if (!isSubscriber || !isSubscribeUsers) {
+          return res.sendStatus(400);
+        }
+
+        await Promise.all([
+          Subscriber.findOneAndUpdate(
+            { owner: id },
+            {
+              $pull: {
+                users: user._id,
+              },
+            }
+          ),
+          SubscribeUser.findOneAndUpdate(
+            { owner: user._id },
+            {
+              $pull: {
+                users: id,
+              },
+            }
+          ),
+        ]);
+
+        res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
     async postPlayUserVideo(req, res, next) {
       const {
         params: { id },
@@ -171,24 +266,17 @@ const apiController = (function () {
       } = req;
 
       try {
-        const video = await UserVideo.findById(id)
-          .populate({
-            path: "likes",
-            populate: {
-              path: "users",
-              select: "_id",
-              match: { _id },
-            },
-          })
-          .select("likes");
+        const isLiked = await UserVideo.exists({
+          _id: id,
+          likes: _id,
+        });
 
-        if (video.likes.users.length !== 0) {
+        if (isLiked) {
           return res.sendStatus(400);
         }
 
         await UserVideo.findByIdAndUpdate(id, {
-          $push: { "likes.users": _id },
-          $inc: { "likes.count": 1 },
+          $push: { likes: _id },
         });
 
         res.sendStatus(200);
@@ -206,27 +294,243 @@ const apiController = (function () {
       } = req;
 
       try {
-        const video = await UserVideo.findById(id)
-          .populate({
-            path: "likes",
-            populate: {
-              path: "users",
-              select: "_id",
-              match: { _id },
-            },
-          })
-          .select("likes");
+        const isLiked = await UserVideo.exists({
+          _id: id,
+          likes: _id,
+        });
 
-        if (video.likes.users.length === 0) {
+        if (!isLiked) {
           return res.sendStatus(400);
         }
 
         await UserVideo.findByIdAndUpdate(id, {
-          $pull: { "likes.users": _id },
-          $inc: { "likes.count": -1 },
+          $pull: { likes: _id },
         });
 
         res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postVideoComment(req, res, next) {
+      const {
+        session: {
+          user: { _id },
+        },
+        body: { videoId, text },
+      } = req;
+
+      try {
+        const videoExists = await UserVideo.exists({ _id: videoId });
+        if (!videoExists) {
+          return res.sendStatus(400);
+        }
+
+        const comment = await UserVideoComment.create({
+          text,
+          owner: _id,
+          video: videoId,
+        });
+
+        await Promise.all([
+          User.findByIdAndUpdate(_id, {
+            $push: { user_video_comments: comment._id },
+          }),
+          UserVideo.findByIdAndUpdate(videoId, {
+            $push: { comments: comment._id },
+          }),
+        ]);
+
+        res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async putVideoComment(req, res, next) {},
+
+    async deleteVideoComment(req, res, next) {},
+
+    async postVideoCommentLike(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      try {
+        const isLike = await UserVideoComment.exists({
+          _id: id,
+          likes: user._id,
+        });
+
+        if (isLike) {
+          return res.sendStatus(400);
+        }
+
+        await UserVideoComment.findByIdAndUpdate(id, {
+          $push: { likes: user._id },
+        });
+
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postVideoCommentUnlike(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      try {
+        const isLiked = await UserVideoComment.exists({
+          _id: id,
+          likes: user._id,
+        });
+
+        if (!isLiked) {
+          console.log(isLiked);
+          return res.sendStatus(400);
+        }
+
+        await UserVideoComment.findByIdAndUpdate(id, {
+          $pull: { likes: user._id },
+        });
+
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postVideoSubComment(req, res, next) {
+      const {
+        params: { id },
+        body: { toUserId, text },
+        session: {
+          user: { _id },
+        },
+      } = req;
+
+      try {
+        const exists = await UserVideoComment.exists({ _id: id });
+        if (!exists) {
+          return res.sendStatus(400);
+        }
+
+        let subComment;
+        const regex = /[0-9a-f]{24}/;
+        if (regex.test(toUserId)) {
+          subComment = await UserVideoSubComment.create({
+            text,
+            to_user: toUserId,
+            comment: id,
+            owner: _id,
+          });
+        } else {
+          subComment = await UserVideoSubComment.create({
+            text,
+            comment: id,
+            owner: _id,
+          });
+        }
+
+        await UserVideoComment.findByIdAndUpdate(id, {
+          $push: { sub_comments: subComment._id },
+        });
+
+        res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async getVideoSubComment(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      try {
+        const comment = await UserVideoComment.findById(id)
+          .select("sub_comments")
+          .populate({
+            path: "sub_comments",
+            select: "-comment -likes",
+            populate: {
+              path: "owner",
+              select: "nickname avatar_url",
+            },
+          });
+        if (!comment) {
+          return res.sendStatus(400);
+        }
+
+        const [likeCounts, isLikes] = await Promise.all([
+          mongooseQuery.getUserVideoSubCommentLikeCount(comment.sub_comments),
+          mongooseQuery.isLikeUserVideoSubComments(
+            user._id,
+            comment.sub_comments
+          ),
+        ]);
+
+        return res
+          .status(200)
+          .json({ subComments: comment.sub_comments, likeCounts, isLikes });
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postVideoSubCommentLike(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      try {
+        const isLike = await UserVideoSubComment.exists({
+          _id: id,
+          likes: user._id,
+        });
+
+        if (isLike) {
+          return res.sendStatus(400);
+        }
+
+        await UserVideoSubComment.findByIdAndUpdate(id, {
+          $push: { likes: user._id },
+        });
+
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async deleteVideoSubCommentLike(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      try {
+        const isLike = await UserVideoSubComment.exists({
+          _id: id,
+          likes: user._id,
+        });
+
+        if (!isLike) {
+          return res.sendStatus(400);
+        }
+
+        await UserVideoSubComment.findByIdAndUpdate(id, {
+          $pull: { likes: user._id },
+        });
+
+        return res.sendStatus(200);
       } catch (error) {
         return next(error);
       }

@@ -1,7 +1,11 @@
 import User from "../models/User";
 import UserVideo from "../models/UserVideo";
+import Subscriber from "../models/Subscriber";
 import fileSystem from "../modules/fileSystem";
 import { getVideoDurationInSeconds } from "get-video-duration";
+import UserVideoComment from "../models/UserVideoComment";
+import mongoose from "mongoose";
+import mongooseQuery from "../modules/mongooseQuery";
 
 const userVideoController = (() => {
   const homeTitle = "Home";
@@ -78,29 +82,101 @@ const userVideoController = (() => {
 
     async getWatchVideo(req, res, next) {
       const {
-        session: {
-          user: { _id },
-        },
+        session: { user },
         params: { id },
       } = req;
 
       try {
         const video = await UserVideo.findById(id)
-          .populate("owner")
+          .select("-duration_in_seconds -likes")
           .populate({
-            path: "likes",
+            path: "owner",
+            select: "nickname avatar_url subscribers",
+          })
+          .populate({
+            path: "comments",
+            select: "-video -likes -sub_comments",
             populate: {
-              path: "users",
-              select: "_id",
-              match: { _id },
+              path: "owner",
+              select: "nickname avatar_url",
             },
           });
+
+        const [likeInfo, subscriberInfo] = await Promise.all([
+          await UserVideo.aggregate([
+            {
+              $match: {
+                _id: mongoose.Types.ObjectId(video._id),
+              },
+            },
+            { $project: { length: { $size: "$likes" } } },
+          ]),
+          await Subscriber.aggregate([
+            {
+              $match: {
+                _id: mongoose.Types.ObjectId(video.owner.subscribers),
+              },
+            },
+            {
+              $project: { length: { $size: "$users" } },
+            },
+          ]),
+        ]);
+
+        video.likeCount = likeInfo[0].length;
+        video.owner.subscriberCount = subscriberInfo[0].length;
+
+        const [commentLikeResults, subCommentResults] = await Promise.all([
+          mongooseQuery.getUserVideoCommentLikeCount(video.comments),
+          mongooseQuery.getUserVideoSubCommentCount(video.comments),
+        ]);
+
+        for (let i = 0; i < video.comments.length; ++i) {
+          video.comments[i].likeCount = commentLikeResults[i];
+          video.comments[i].subCount = subCommentResults[i];
+        }
+
         if (!video) {
           return next();
         }
+        let isLiked = false;
+        let isSubscribed = false;
+        if (user) {
+          isLiked = (await UserVideo.exists({
+            _id: id,
+            likes: user._id,
+          }))
+            ? true
+            : false;
 
-        console.log(video.likes.users.length);
-        const isLike = video.likes.users.length ? true : false;
+          if (String(video.owner._id) !== String(user._id)) {
+            isSubscribed = (await Subscriber.exists({
+              _id: video.owner.subscribers._id,
+              users: user._id,
+            }))
+              ? true
+              : false;
+          }
+
+          const likePromises = [];
+          for (const comment of video.comments) {
+            likePromises.push(
+              UserVideoComment.exists({
+                _id: comment._id,
+                likes: user._id,
+              })
+            );
+          }
+
+          const results = await Promise.all(likePromises);
+          for (let i = 0; i < video.comments.length; ++i) {
+            if (!results[i]) {
+              continue;
+            }
+            video.comments[i].isLiked = true;
+          }
+        }
+
         const videos = await UserVideo.find();
         if (!videos) {
           return next();
@@ -110,7 +186,8 @@ const userVideoController = (() => {
           pageTitle: `${video.title}`,
           video,
           videos,
-          isLike,
+          isLiked,
+          isSubscribed,
         });
       } catch (error) {
         next(error);

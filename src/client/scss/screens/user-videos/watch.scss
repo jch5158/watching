@@ -55,14 +55,14 @@
         justify-content: center;
 
         a {
-          margin-bottom: 10px;
+          margin-bottom: 15px;
           span {
             color: white;
             font-size: 23px;
           }
         }
 
-        > span:last-child {
+        > div span {
           font-size: 18px;
         }
       }
@@ -95,7 +95,7 @@
         }
       }
 
-      .unlike {
+      .clicked {
         color: white;
         background-color: rgba(120, 120, 120, 1);
       }
@@ -177,23 +177,6 @@
       &:active {
         background-color: rgba(170, 170, 170, 1);
       }
-    }
-  }
-
-  .user-video-comments__comments {
-    display: flex;
-    margin-top: 20px;
-    .user-video-comments__comment-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-    }
-
-    > div {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-      margin-left: 20px;
     }
   }
 }

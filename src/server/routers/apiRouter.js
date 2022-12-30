@@ -8,14 +8,17 @@ const apiRouter = express.Router();
 apiRouter
   .route("/users/email/authenticode")
   .get(
-    [query("email").exists().trim().isEmail(), middlewares.validateMiddleware],
+    [
+      query("email").exists().trim().isEmail(),
+      middlewares.validateApiMiddleware,
+    ],
     apiController.sendAuthenticodeByEmail
   )
   .post(
     [
       body("email").exists().trim().isEmail(),
       body("authenticode").exists().trim().isLength(6),
-      middlewares.validateMiddleware,
+      middlewares.validateApiMiddleware,
     ],
     apiController.postConfirmAuthenticode
   );
@@ -27,10 +30,20 @@ apiRouter
       .exists()
       .trim()
       .matches(/^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,15}$/),
-    middlewares.validateMiddleware,
+    middlewares.validateApiMiddleware,
   ])
   .post(apiController.postConfirmNickname)
   .put(middlewares.alreadySetNicknameMiddleware, apiController.putNickname);
+
+apiRouter
+  .route("/users/:id([0-9a-f]{24})/subscribe")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .post(apiController.subscribeChannel);
+
+apiRouter
+  .route("/users/:id([0-9a-f]{24})/unsubscribe")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .post(apiController.unsubscribeChannel);
 
 apiRouter
   .route("/user-videos/:id([0-9a-f]{24})")
@@ -39,12 +52,54 @@ apiRouter
 
 apiRouter
   .route("/user-videos/:id([0-9a-f]{24})/like")
-  .all(middlewares.onlyLoginMiddleware)
+  .all(middlewares.onlyLoginApiMiddleware)
   .post(apiController.postLikeVideo);
 
 apiRouter
   .route("/user-videos/:id([0-9a-f]{24})/unlike")
-  .all(middlewares.onlyLoginMiddleware)
+  .all(middlewares.onlyLoginApiMiddleware)
   .post(apiController.postUnLikeVideo);
+
+apiRouter
+  .route("/user-video-comments")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .post(
+    [
+      body("videoId")
+        .exists()
+        .matches(/[0-9a-f]{24}/),
+      body("text").exists(),
+      middlewares.validateApiMiddleware,
+    ],
+    apiController.postVideoComment
+  )
+  .put(apiController.putVideoComment)
+  .delete(apiController.deleteVideoComment);
+
+apiRouter
+  .route("/user-video-comments/:id([0-9a-f]{24})/like")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .post(apiController.postVideoCommentLike);
+
+apiRouter
+  .route("/user-video-comments/:id([0-9a-f]{24})/unlike")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .post(apiController.postVideoCommentUnlike);
+
+apiRouter
+  .route("/user-video-comments/:id([0-9a-f]{24})/sub")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .get(apiController.getVideoSubComment)
+  .post(
+    body("text").exists().isLength({ max: 150 }),
+    middlewares.validateApiMiddleware,
+    apiController.postVideoSubComment
+  );
+
+apiRouter
+  .route("/user-video-sub-comments/:id([0-9a-f]{24})/like")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .post(apiController.postVideoSubCommentLike)
+  .delete(apiController.deleteVideoSubCommentLike);
 
 export default apiRouter;

@@ -1,5 +1,5 @@
 import userValidator from "../validators/userValidator";
-import userApi from "../modules/usersApi";
+import userApi from "../modules/userApi";
 
 const nicknameInput = document.querySelector(".user-form__nickname");
 const nicknameConfirmBtn = document.querySelector(

@@ -8,8 +8,24 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   sns_account: { type: Boolean, required: true, default: false },
   avatar_url: { type: String, required: true },
-  number_of_subscribers: { type: Number, required: true, default: 0 },
   create_at: { type: Date, required: true, default: Date.now },
+  subscribers: { type: mongoose.Schema.Types.ObjectId, ref: "Subscriber" },
+  subscribe_users: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Subscriber_User",
+  },
+  user_video_comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User_Video_Comment",
+    },
+  ],
+  user_video_sub_comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User_Video_Sub_Comment",
+    },
+  ],
   user_videos: [
     {
       type: mongoose.Types.ObjectId,

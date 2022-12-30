@@ -87,6 +87,15 @@ const middlewares = (function () {
       return next();
     },
 
+    validateApiMiddleware(req, res, next) {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        console.log(errors.array());
+        return res.sendStatus(400);
+      }
+      return next();
+    },
+
     alreadySetNicknameMiddleware(req, res, next) {
       const {
         session: { user },
@@ -125,6 +134,17 @@ const middlewares = (function () {
       if (!nickname) {
         req.flash("warning", "닉네임을 설정해주세요");
         return res.redirect("/users/nickname");
+      }
+      return next();
+    },
+
+    onlyLoginApiMiddleware(req, res, next) {
+      const {
+        session: { isLoggedIn },
+      } = req;
+
+      if (!isLoggedIn) {
+        return res.sendStatus(400);
       }
       return next();
     },

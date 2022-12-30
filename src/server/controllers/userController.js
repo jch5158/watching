@@ -4,6 +4,8 @@ import bcrypt from "bcrypt";
 import kakaoLogin from "../modules/kakaoLogin";
 import githubLogin from "../modules/githubLogin";
 import fileSystem from "../modules/fileSystem";
+import Subscriber from "../models/Subscriber";
+import SubscribeUser from "../models/SubscribeUser";
 
 const userController = (() => {
   const loginTitle = "Login";
@@ -72,6 +74,12 @@ const userController = (() => {
               .render(joinTemplate, { pageTitle: joinTitle });
           }
 
+          redisClient.del(`${email}/${authenticode}`, (error, result) => {
+            if (error) {
+              return next(error);
+            }
+          });
+
           try {
             const [emailExists, nicknameExists] = await Promise.all([
               User.exists({ email }),
@@ -94,7 +102,7 @@ const userController = (() => {
                 .render(joinTemplate, { pageTitle: joinTitle });
             }
 
-            await User.create({
+            const user = await User.create({
               name,
               email,
               nickname,
@@ -102,11 +110,18 @@ const userController = (() => {
               avatar_url: path,
             });
 
-            redisClient.del(`${email}/${authenticode}`, (error, result) => {
-              if (error) {
-                return next(error);
-              }
-            });
+            const [subscribers, subscribeUsers] = await Promise.all([
+              Subscriber.create({
+                owner: user._id,
+              }),
+              SubscribeUser.create({
+                owner: user._id,
+              }),
+            ]);
+
+            user.subscribers = subscribers._id;
+            user.subscribe_users = subscribeUsers._id;
+            await user.save();
             req.flash("success", joingSuccess);
             return res.redirect("/users/login");
           } catch (error) {
@@ -217,6 +232,19 @@ const userController = (() => {
             sns_account: true,
             avatar_url: profile.profile_image_url,
           });
+
+          const [subscribers, subscribeUsers] = await Promise.all([
+            Subscriber.create({
+              owner: user._id,
+            }),
+            SubscribeUser.create({
+              owner: user._id,
+            }),
+          ]);
+
+          user.subscribers = subscribers._id;
+          user.subscribe_users = subscribeUsers._id;
+          await user.save();
         }
 
         req.session.isLoggedIn = true;
@@ -275,6 +303,19 @@ const userController = (() => {
             sns_account: true,
             avatar_url: userData.avatar_url,
           });
+
+          const [subscribers, subscribeUsers] = await Promise.all([
+            Subscriber.create({
+              owner: user._id,
+            }),
+            SubscribeUser.create({
+              owner: user._id,
+            }),
+          ]);
+
+          user.subscribers = subscribers._id;
+          user.subscribe_users = subscribeUsers._id;
+          await user.save();
         }
 
         req.session.isLoggedIn = true;
@@ -297,7 +338,18 @@ const userController = (() => {
     async getProfile(req, res, next) {
       const { id } = req.params;
       try {
-        const user = await User.findById(id);
+        const user = await User.findById(
+          id,
+          "nickname avatar_url subscribers"
+        ).populate({
+          path: "subscribers",
+          populate: {
+            path: "users",
+            select: "nickname avatar_url",
+          },
+        });
+
+        console.log(user.subscribers);
         if (!user) {
           return next();
         }
