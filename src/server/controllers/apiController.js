@@ -316,6 +316,7 @@ const apiController = (function () {
     async postVideoComment(req, res, next) {
       const {
         session: {
+          user,
           user: { _id },
         },
         body: { videoId, text },
@@ -342,7 +343,13 @@ const apiController = (function () {
           }),
         ]);
 
-        res.sendStatus(200);
+        console.log("ASDF");
+        res.status(200).json({
+          id: comment._id,
+          nickname: user.nickname,
+          avatarUrl: user.avatar_url,
+          createAt: comment.create_at,
+        });
       } catch (error) {
         return next(error);
       }

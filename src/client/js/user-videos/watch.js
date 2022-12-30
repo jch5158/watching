@@ -6,6 +6,7 @@ const videoContainer = document.querySelector(".watch-user-video__container");
 const userInfo = document.querySelector(".watch-user-video__user-info");
 const videoLikeBtn = document.querySelector(".watch-user-video__like-btn");
 const subscribeBtn = document.querySelector(".watch-user-video__subscribe-btn");
+const userVideoCommentsDiv = document.querySelector(".user-video-comments");
 const subScribeCntSpan = document.querySelector(
   ".watch-user-video__subscribe_cnt"
 );
@@ -26,6 +27,101 @@ const subCommentBtns = document.querySelectorAll(
 const addSubCommentBtns = document.querySelectorAll(
   ".user-video-comment__add-sub-comment-btn"
 );
+
+const makeComment = (commentInfo, parentElement) => {
+  const commentDiv = document.createElement("div");
+  commentDiv.classList.add("user-video-comment");
+  const avatarImg = document.createElement("img");
+  avatarImg.classList.add("user-video-comment__comment-avatar");
+  avatarImg.src = commentInfo.avatarUrl;
+  const containerDiv = document.createElement("div");
+  containerDiv.classList.add("user-video-comment__container");
+  const nicknameSpan = document.createElement("span");
+  nicknameSpan.innerText = `${commentInfo.nickname} • ${new Date(
+    commentInfo.createAt
+  ).toLocaleDateString("ko-kr", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+  })}`;
+  const textSpan = document.createElement("span");
+  textSpan.innerText = commentInfo.text;
+  const stateBtnsDiv = document.createElement("div");
+  stateBtnsDiv.classList.add("user-video-comment__state-btn");
+  stateBtnsDiv.dataset.id = commentInfo.id;
+  const likeBtn = document.createElement("button");
+  likeBtn.classList.add("user-video-comment__like-btn");
+  likeBtn.addEventListener("click", likeSubCommentHandler);
+  const likeI = document.createElement("i");
+  likeI.classList.add("far");
+  likeI.classList.add("fa-thumbs-up");
+  likeI.classList.add("fa-lg");
+  const likeCntSpan = document.createElement("span");
+  likeCntSpan.innerText = "0";
+  const answerBtn = document.createElement("button");
+  answerBtn.innerText = "답글";
+  answerBtn.classList.add("user-video-comment__sub-visible-btn");
+  answerBtn.addEventListener("click", subCommentInputVisibleHandler);
+  const subContainerDiv = document.createElement("div");
+  subContainerDiv.classList.add("user-video-comment__sub-container");
+  subContainerDiv.classList.add("display-none");
+  const tagSpan = document.createElement("span");
+  const addSubDiv = document.createElement("div");
+  const commentInput = document.createElement("input");
+  commentInput.classList.add("user-video-comment__sub-input");
+  commentInput.setAttribute("type", "text");
+  commentInput.setAttribute("placeholder", "댓글 추가...");
+  commentInput.setAttribute("maxLength", "150");
+  const commentBtn = document.createElement("button");
+  commentBtn.classList.add("user-video-comment__sub-btn");
+  commentBtn.innerText = "댓글";
+  commentBtn.dataset.id = commentInfo.id;
+  commentBtn.addEventListener("click", submitSubCommentHandler);
+  const subDiv = document.createElement("div");
+  subDiv.classList.add("user-video-comment-sub");
+  const addSubBtn = document.createElement("button");
+  addSubBtn.classList.add("user-video-comment__add-sub-comment-btn");
+  addSubBtn.dataset.id = commentInfo.id;
+  addSubBtn.addEventListener("click", addSubCommentHandler);
+  const addSubI = document.createElement("i");
+  addSubI.classList.add("fas");
+  addSubI.classList.add("fa-caret-down");
+  addSubI.classList.add("fa-lg");
+  const addSubSpan1 = document.createElement("span");
+  addSubSpan1.innerText = "답글";
+  const addSubSpan2 = document.createElement("span");
+  addSubSpan2.innerText = "0";
+  const addSubSpan3 = document.createElement("span");
+  addSubSpan3.innerText = "개";
+
+  addSubBtn.appendChild(addSubI);
+  addSubBtn.appendChild(addSubSpan1);
+  addSubBtn.appendChild(addSubSpan2);
+  addSubBtn.appendChild(addSubSpan3);
+  subDiv.appendChild(addSubBtn);
+
+  addSubDiv.appendChild(commentInput);
+  addSubDiv.appendChild(commentBtn);
+  subContainerDiv.appendChild(tagSpan);
+  subContainerDiv.appendChild(addSubDiv);
+
+  likeBtn.appendChild(likeI);
+  likeBtn.appendChild(likeCntSpan);
+  stateBtnsDiv.appendChild(likeBtn);
+  stateBtnsDiv.appendChild(answerBtn);
+
+  containerDiv.appendChild(nicknameSpan);
+  containerDiv.appendChild(textSpan);
+  containerDiv.appendChild(stateBtnsDiv);
+  containerDiv.appendChild(subContainerDiv);
+  containerDiv.appendChild(subDiv);
+
+  commentDiv.appendChild(avatarImg);
+  commentDiv.appendChild(containerDiv);
+
+  parentElement.appendChild(commentDiv);
+};
 
 const makeSubComments = (likeCounts, subComments, isLikes, parentElement) => {
   const length = subComments.length;
@@ -130,7 +226,7 @@ const makeSubComments = (likeCounts, subComments, isLikes, parentElement) => {
   }
 };
 
-const videoPlayHandler = async () => {
+const playVideoHandler = async () => {
   const {
     dataset: { id },
   } = videoContainer;
@@ -138,7 +234,7 @@ const videoPlayHandler = async () => {
   userVideoApi.videoPlay(id);
 };
 
-const videoEndedHandler = async () => {
+const endVideoHandler = async () => {
   const {
     dataset: { id },
   } = videoContainer;
@@ -166,7 +262,7 @@ const keyEventHandler = (() => {
   };
 })();
 
-const videoLikeHandler = async () => {
+const likeVideoHandler = async () => {
   const {
     dataset: { id },
   } = videoContainer;
@@ -180,12 +276,12 @@ const videoLikeHandler = async () => {
     Number(String(numberOfLikesSpan.innerText).replace(",", "")) + 1
   ).toLocaleString("ko-KR");
 
-  videoLikeBtn.removeEventListener("click", videoLikeHandler);
-  videoLikeBtn.addEventListener("click", videoUnLikeHandler);
+  videoLikeBtn.removeEventListener("click", likeVideoHandler);
+  videoLikeBtn.addEventListener("click", unlikeVideoHandler);
   videoLikeBtn.classList.add("clicked");
 };
 
-const videoUnLikeHandler = async () => {
+const unlikeVideoHandler = async () => {
   const {
     dataset: { id },
   } = videoContainer;
@@ -199,8 +295,8 @@ const videoUnLikeHandler = async () => {
     Number(String(numberOfLikesSpan.innerText).replace(",", "")) - 1
   ).toLocaleString("ko-KR");
 
-  videoLikeBtn.removeEventListener("click", videoUnLikeHandler);
-  videoLikeBtn.addEventListener("click", videoLikeHandler);
+  videoLikeBtn.removeEventListener("click", unlikeVideoHandler);
+  videoLikeBtn.addEventListener("click", likeVideoHandler);
   videoLikeBtn.classList.remove("clicked");
 };
 
@@ -238,20 +334,24 @@ const unsubscribeHandler = async () => {
   subScribeCntSpan.innerText = Number(subScribeCntSpan.innerText) - 1;
 };
 
+// 코멘트 작성
 const submitCommentHandler = async () => {
   const {
     dataset: { id },
   } = videoContainer;
+
   const text = commentInput.value;
   const res = await userVideoApi.submitVideoComment(id, text);
   if (res.status !== 200) {
     return;
   }
-
+  const result = await res.json();
+  result.text = text;
+  makeComment(result, userVideoCommentsDiv);
   commentInput.value = "";
 };
 
-const commentLikeHandler = async (event) => {
+const likeCommentHandler = async (event) => {
   const {
     dataset: { id },
   } = event.target.parentElement;
@@ -266,11 +366,11 @@ const commentLikeHandler = async (event) => {
   event.target.children[1].innerText =
     Number(event.target.children[1].innerText) + 1;
   event.target.classList.add("liked");
-  event.target.removeEventListener("click", commentLikeHandler);
-  event.target.addEventListener("click", commentUnLikeHandler);
+  event.target.removeEventListener("click", likeCommentHandler);
+  event.target.addEventListener("click", unlikeCommentHandler);
 };
 
-const commentUnLikeHandler = async (event) => {
+const unlikeCommentHandler = async (event) => {
   const {
     dataset: { id },
   } = event.target.parentElement;
@@ -283,8 +383,8 @@ const commentUnLikeHandler = async (event) => {
   event.target.children[1].innerText =
     Number(event.target.children[1].innerText) - 1;
   event.target.classList.remove("liked");
-  event.target.removeEventListener("click", commentUnLikeHandler);
-  event.target.addEventListener("click", commentLikeHandler);
+  event.target.removeEventListener("click", unlikeCommentHandler);
+  event.target.addEventListener("click", likeCommentHandler);
 };
 
 const subCommentInputVisibleHandler = (event) => {
@@ -332,7 +432,7 @@ const submitSubCommentHandler = async (event) => {
   if (res.status !== 200) {
     return;
   }
-  previousSibling.value = "";
+  location.reload();
 };
 
 const addSubCommentHandler = async (event) => {
@@ -425,14 +525,14 @@ const unlikeSubCommentHandler = async (event) => {
   target.addEventListener("click", likeSubCommentHandler);
 };
 
-userVideo.addEventListener("play", videoPlayHandler);
-userVideo.addEventListener("ended", videoEndedHandler);
+userVideo.addEventListener("play", playVideoHandler);
+userVideo.addEventListener("ended", endVideoHandler);
 window.addEventListener("keydown", keyEventHandler);
 
 if (videoLikeBtn.classList.contains("clicked")) {
-  videoLikeBtn.addEventListener("click", videoUnLikeHandler);
+  videoLikeBtn.addEventListener("click", unlikeVideoHandler);
 } else {
-  videoLikeBtn.addEventListener("click", videoLikeHandler);
+  videoLikeBtn.addEventListener("click", likeVideoHandler);
 }
 
 if (subscribeBtn) {
@@ -447,9 +547,9 @@ commentBtn.addEventListener("click", submitCommentHandler);
 
 for (let commentLikeBtn of commentLikeBtns) {
   if (commentLikeBtn.classList.contains("liked")) {
-    commentLikeBtn.addEventListener("click", commentUnLikeHandler);
+    commentLikeBtn.addEventListener("click", unlikeCommentHandler);
   } else {
-    commentLikeBtn.addEventListener("click", commentLikeHandler);
+    commentLikeBtn.addEventListener("click", likeCommentHandler);
   }
 }
 

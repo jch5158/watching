@@ -61,7 +61,7 @@ block contents
                     a(href="") 
                         span.watch-user-video__hashtags #{hashtag}, 
     div.user-video-comments
-        span.user-video-comments__number-of-comments 댓글 #{video.comments.length}개
+        span.user-video-comments__number-of-comments 댓글 #{video.comments.length + video.comments.reduce((acc, cur) => { return acc + cur.subCount;}, 0)}개
         if isLoggedIn
             div(data-id=loggedInUser._id).user-video-comments__comment-box
                 div
@@ -76,4 +76,4 @@ block contents
         each comment in video.comments
             +user-video-comment(comment.owner, comment)
 block scripts 
-    script(src="/assets/js/user-videos/watch.js")  
+    script(src="/assets/js/user-videos/watch.js")
