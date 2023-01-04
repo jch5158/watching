@@ -162,6 +162,15 @@ const middlewares = (function () {
       return next();
     },
 
+    sessionIdMiddleware(req, res, next) {
+      if (!req.cookies["connect.sid"]) {
+        req.flash("warning", "로그인 에러");
+        return res.redirect("/");
+      }
+
+      next();
+    },
+
     onlyNotLoginMiddleware(req, res, next) {
       const {
         session: { user },

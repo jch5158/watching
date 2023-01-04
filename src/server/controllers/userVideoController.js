@@ -19,8 +19,9 @@ const userVideoController = (() => {
     async getHomeVideos(req, res, next) {
       try {
         const videos = await UserVideo.find()
-          .sort({ createAt: "desc" })
-          .populate("owner");
+          .sort({ create_at: "desc" })
+          .populate({ path: "owner", select: "nickname avatar_url" })
+          .limit(12);
 
         res.render(homeTemplate, { pageTitle: homeTitle, videos });
       } catch (error) {
@@ -96,11 +97,16 @@ const userVideoController = (() => {
           .populate({
             path: "comments",
             select: "-video -likes -sub_comments",
+            options: { sort: { create_at: -1 }, limit: 5 },
             populate: {
               path: "owner",
               select: "nickname avatar_url",
             },
           });
+
+        if (!video) {
+          return next();
+        }
 
         const [likeInfo, subscriberInfo] = await Promise.all([
           await UserVideo.aggregate([
@@ -136,9 +142,6 @@ const userVideoController = (() => {
           video.comments[i].subCount = subCommentResults[i];
         }
 
-        if (!video) {
-          return next();
-        }
         let isLiked = false;
         let isSubscribed = false;
         if (user) {
@@ -170,22 +173,32 @@ const userVideoController = (() => {
 
           const results = await Promise.all(likePromises);
           for (let i = 0; i < video.comments.length; ++i) {
-            if (!results[i]) {
-              continue;
+            if (results[i]) {
+              video.comments[i].isLiked = true;
+            } else {
+              video.comments[i].isLiked = false;
             }
-            video.comments[i].isLiked = true;
           }
         }
 
-        const videos = await UserVideo.find();
-        if (!videos) {
+        const sideVideos = await UserVideo.find(
+          {
+            owner: video.owner._id,
+            _id: { $ne: id },
+          },
+
+          "title thumbnail_url owner views create_at"
+        )
+          .limit(6)
+          .populate({ path: "owner", select: "nickname" });
+        if (!sideVideos) {
           return next();
         }
 
         res.render(watchTemplate, {
           pageTitle: `${video.title}`,
           video,
-          videos,
+          sideVideos,
           isLiked,
           isSubscribed,
         });

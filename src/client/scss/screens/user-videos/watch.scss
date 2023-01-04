@@ -134,6 +134,7 @@
   margin: 0 auto;
   margin-top: 45px;
 
+  > span,
   .user-video-comments__number-of-comments {
     font-size: 18px;
   }
@@ -179,4 +180,10 @@
       }
     }
   }
+}
+
+.user-video-comments__mixin {
+  width: 90%;
+  margin: 0 auto;
+  margin-top: 45px;
 }

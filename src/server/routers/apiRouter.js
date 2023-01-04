@@ -6,6 +6,14 @@ import apiController from "../controllers/apiController";
 const apiRouter = express.Router();
 
 apiRouter
+  .route("/home/user-videos")
+  .all([
+    query("count").exists().isNumeric({ min: 1 }),
+    middlewares.validateApiMiddleware,
+  ])
+  .get(apiController.getHomeVideos);
+
+apiRouter
   .route("/users/email/authenticode")
   .get(
     [
@@ -72,8 +80,40 @@ apiRouter
       middlewares.validateApiMiddleware,
     ],
     apiController.postVideoComment
+  );
+
+apiRouter
+  .route("/user-video/:id([0-9a-f]{24})/scroll")
+  .all([
+    query("count").exists().isNumeric({ min: 1 }),
+    middlewares.validateApiMiddleware,
+  ])
+  .get(apiController.getScrollComments);
+
+apiRouter
+  .route("/side-user-videos")
+  .all([
+    query("userId")
+      .exists()
+      .matches(/[0-9a-f]{24}/),
+    query("videoId")
+      .exists()
+      .matches(/[0-9a-f]{24}/),
+    query("count").exists().isNumeric({ min: 1 }),
+    middlewares.validateApiMiddleware,
+  ])
+  .get(apiController.getScrollSideVideo);
+
+apiRouter
+  .route("/user-video-comments/:id([0-9a-f]{24})")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .put(
+    [
+      body("text").exists().isLength({ max: 150 }),
+      middlewares.validateApiMiddleware,
+    ],
+    apiController.putVideoComment
   )
-  .put(apiController.putVideoComment)
   .delete(apiController.deleteVideoComment);
 
 apiRouter
@@ -88,13 +128,27 @@ apiRouter
 
 apiRouter
   .route("/user-video-comments/:id([0-9a-f]{24})/sub")
-  .all(middlewares.onlyLoginApiMiddleware)
   .get(apiController.getVideoSubComment)
   .post(
-    body("text").exists().isLength({ max: 150 }),
-    middlewares.validateApiMiddleware,
+    middlewares.onlyLoginApiMiddleware,
+    [
+      body("text").exists().isLength({ max: 150 }),
+      middlewares.validateApiMiddleware,
+    ],
     apiController.postVideoSubComment
   );
+
+apiRouter
+  .route("/user-video-sub-comments/:id([0-9a-f]{24})")
+  .all(middlewares.onlyLoginApiMiddleware)
+  .put(
+    [
+      body("text").exists().isLength({ max: 150 }),
+      middlewares.validateApiMiddleware,
+    ],
+    apiController.putVideoSubComment
+  )
+  .delete(apiController.deleteVideoSubComment);
 
 apiRouter
   .route("/user-video-sub-comments/:id([0-9a-f]{24})/like")

@@ -5,18 +5,13 @@ include ../../mixins/user-video-comment
 block headers
     include ../../partials/nav-header
 block contents 
-    div.watch-user-video
+    div.watch-user-video(data-id=loggedInUser ? loggedInUser._id : "")
         div 
             div(data-id=video._id).watch-user-video__container
                 video(src=`/${video.file_url}`, controls="controls").watch-user-video__video
-        div
-            each video in videos
-                +side-user-vide(vide)
-                +side-user-vide(vide)
-                +side-user-vide(vide)
-                +side-user-vide(vide)
-                +side-user-vide(vide)
-                +side-user-vide(vide)
+        div.watch-user-video__side-video-container
+            each sideVideo in sideVideos
+                +side-user-video(sideVideo)
     div.watch-user-video__info
         span.watch-user-video__title=video.title
         div(data-id=video.owner._id).watch-user-video__user-info
@@ -61,7 +56,9 @@ block contents
                     a(href="") 
                         span.watch-user-video__hashtags #{hashtag}, 
     div.user-video-comments
-        span.user-video-comments__number-of-comments 댓글 #{video.comments.length + video.comments.reduce((acc, cur) => { return acc + cur.subCount;}, 0)}개
+        span 댓글 
+        span.user-video-comments__number-of-comments #{video.comments.length + video.comments.reduce((acc, cur) => { return acc + cur.subCount;}, 0)}
+        span 개
         if isLoggedIn
             div(data-id=loggedInUser._id).user-video-comments__comment-box
                 div
@@ -73,6 +70,7 @@ block contents
                 div 
                     input(type="text", placeholder="댓글 추가...", maxLength="150").user-video-comments__input
                     button.user-video-comments__input-btn 댓글
+    div.user-video-comments__mixin
         each comment in video.comments
             +user-video-comment(comment.owner, comment)
 block scripts 

@@ -9,6 +9,7 @@ import rootRouter from "../routers/rootRouter";
 import userRouter from "../routers/userRouter";
 import userVideoRouter from "../routers/userVideoRouter";
 import middlewares from "../modules/middlewares";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const logger = morgan("dev");
@@ -26,6 +27,7 @@ app.use(flash());
 app.use(express.urlencoded({ extended: true })); // from 데이터를 읽기 위한 middleware
 app.use(express.text());
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   session({
     secret: process.env.COOKIE_SECRET,

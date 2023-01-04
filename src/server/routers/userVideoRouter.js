@@ -14,8 +14,8 @@ videoRouter
   .post(
     middlewares.uploadUserVideoMiddleware,
     [
-      body("title").exists().trim().isLength({ max: 50 }),
-      body("descriptions").trim().isLength({ max: 400 }),
+      body("title").exists().trim().isLength({ min: 1, max: 50 }),
+      body("description").trim().isLength({ min: 1, max: 400 }),
       body("hashtags").trim().isLength({ max: 95 }),
       middlewares.validateMiddleware,
     ],

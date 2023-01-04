@@ -41,7 +41,7 @@ userRouter
 
 userRouter
   .route("/login")
-  .all(middlewares.onlyNotLoginMiddleware)
+  .all(middlewares.onlyNotLoginMiddleware, middlewares.sessionIdMiddleware)
   .get(userController.getLogin)
   .post(
     [
@@ -67,6 +67,7 @@ userRouter.get(
 userRouter.get(
   "/kakao/login/finish",
   middlewares.onlyNotLoginMiddleware,
+  middlewares.sessionIdMiddleware,
   userController.getFinishKakaoLogin
 );
 
@@ -79,6 +80,7 @@ userRouter.get(
 userRouter.get(
   "/github/login/finish",
   middlewares.onlyNotLoginMiddleware,
+  middlewares.sessionIdMiddleware,
   userController.getFinishGithubLogin
 );
 

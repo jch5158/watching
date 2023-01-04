@@ -1,5 +1,11 @@
 const userVideoApi = (() => {
   const userVideoApi = {
+    async getVideos(count) {
+      const config = { count };
+      const params = new URLSearchParams(config).toString();
+      return fetch(`/api/home/user-videos?${params}`);
+    },
+
     async videoPlay(id) {
       return fetch(`/api/user-videos/${id}`, {
         method: "POST",
@@ -34,6 +40,34 @@ const userVideoApi = (() => {
       });
     },
 
+    async updateVideoComment(commendId, text) {
+      return fetch(`/api/user-video-comments/${commendId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+    },
+
+    async getSideVideo(userId, videoId, count) {
+      const config = {
+        userId,
+        videoId,
+        count,
+      };
+      const params = new URLSearchParams(config).toString();
+      return fetch(`/api/side-user-videos/?${params}`, {
+        method: "GET",
+      });
+    },
+
+    async deleteVideoComment(id) {
+      return fetch(`/api/user-video-comments/${id}`, {
+        method: "DELETE",
+      });
+    },
+
     async videoCommentLike(id) {
       return fetch(`/api/user-video-comments/${id}/like`, {
         method: "POST",
@@ -52,12 +86,25 @@ const userVideoApi = (() => {
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({ text, toUserId }),
       });
     },
 
-    async addvideoSubComment(id) {},
+    async updateSubComment(subCommentId, text) {
+      return fetch(`/api/user-video-sub-comments/${subCommentId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+    },
+
+    async deleteSubComment(id) {
+      return fetch(`/api/user-video-sub-comments/${id}`, {
+        method: "DELETE",
+      });
+    },
   };
 
   return userVideoApi;

@@ -7,6 +7,7 @@ const baseUrl = "./src/client/js";
 module.exports = {
   entry: {
     main: `${baseUrl}/main.js`,
+    "root/home": `${baseUrl}/root/home.js`,
     "users/join": `${baseUrl}/users/join.js`,
     "users/set-nickname": `${baseUrl}/users/set-nickname.js`,
     "users/edit-profile": `${baseUrl}/users/edit-profile.js`,

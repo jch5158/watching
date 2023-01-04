@@ -158,10 +158,47 @@ const userController = (() => {
             .render(loginTemplate, { pageTitle: loginTitle });
         }
 
-        req.session.isLoggedIn = true;
-        req.session.user = user;
-        req.flash("success", loginSuccess);
-        return res.redirect("/");
+        redisClient.get(email, (error, sessionId) => {
+          if (error) {
+            return next(error);
+          }
+
+          if (sessionId) {
+            redisClient.del(`session:${sessionId}`, (error, result) => {
+              if (error) {
+                return next(error);
+              }
+
+              const newSessionId = req.cookies["connect.sid"]
+                .substring(2)
+                .split(".")[0];
+              redisClient.set(email, newSessionId, (error, result) => {
+                if (error) {
+                  return next(error);
+                }
+
+                req.session.isLoggedIn = true;
+                req.session.user = user;
+                req.flash("success", loginSuccess);
+                return res.redirect("/");
+              });
+            });
+          }
+
+          const newSessionId = req.cookies["connect.sid"]
+            .substring(2)
+            .split(".")[0];
+          redisClient.set(email, newSessionId, (error, result) => {
+            if (error) {
+              return next(error);
+            }
+
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            req.flash("success", loginSuccess);
+            return res.redirect("/");
+          });
+        });
       } catch (error) {
         return next(error);
       }
@@ -247,12 +284,51 @@ const userController = (() => {
           await user.save();
         }
 
-        req.session.isLoggedIn = true;
-        req.session.user = user;
-        if (!isOverlapNickname) {
-          req.flash("success", loginSuccess);
-        }
-        return res.redirect("/");
+        redisClient.get(user.email, (error, sessionId) => {
+          if (error) {
+            return next(error);
+          }
+
+          if (sessionId) {
+            redisClient.del(`session:${sessionId}`, (error, result) => {
+              if (error) {
+                return next(error);
+              }
+
+              const newSessionId = req.cookies["connect.sid"]
+                .substring(2)
+                .split(".")[0];
+              redisClient.set(user.email, newSessionId, (error, result) => {
+                if (error) {
+                  return next(error);
+                }
+
+                req.session.isLoggedIn = true;
+                req.session.user = user;
+                if (!isOverlapNickname) {
+                  req.flash("success", loginSuccess);
+                }
+                return res.redirect("/");
+              });
+            });
+          } else {
+            const newSessionId = req.cookies["connect.sid"]
+              .substring(2)
+              .split(".")[0];
+            redisClient.set(user.email, newSessionId, (error, result) => {
+              if (error) {
+                return next(error);
+              }
+
+              req.session.isLoggedIn = true;
+              req.session.user = user;
+              if (!isOverlapNickname) {
+                req.flash("success", loginSuccess);
+              }
+              return res.redirect("/");
+            });
+          }
+        });
       } catch (error) {
         return next(error);
       }
@@ -318,12 +394,51 @@ const userController = (() => {
           await user.save();
         }
 
-        req.session.isLoggedIn = true;
-        req.session.user = user;
-        if (!isOverlapNickname) {
-          req.flash("success", loginSuccess);
-        }
-        return res.redirect("/");
+        redisClient.get(user.email, (error, sessionId) => {
+          if (error) {
+            return next(error);
+          }
+
+          if (sessionId) {
+            redisClient.del(`session:${sessionId}`, (error, result) => {
+              if (error) {
+                return next(error);
+              }
+
+              const newSessionId = req.cookies["connect.sid"]
+                .substring(2)
+                .split(".")[0];
+              redisClient.set(user.email, newSessionId, (error, result) => {
+                if (error) {
+                  return next(error);
+                }
+
+                req.session.isLoggedIn = true;
+                req.session.user = user;
+                if (!isOverlapNickname) {
+                  req.flash("success", loginSuccess);
+                }
+                return res.redirect("/");
+              });
+            });
+          } else {
+            const newSessionId = req.cookies["connect.sid"]
+              .substring(2)
+              .split(".")[0];
+            redisClient.set(user.email, newSessionId, (error, result) => {
+              if (error) {
+                return next(error);
+              }
+
+              req.session.isLoggedIn = true;
+              req.session.user = user;
+              if (!isOverlapNickname) {
+                req.flash("success", loginSuccess);
+              }
+              return res.redirect("/");
+            });
+          }
+        });
       } catch (error) {
         return next(error);
       }
@@ -349,10 +464,10 @@ const userController = (() => {
           },
         });
 
-        console.log(user.subscribers);
         if (!user) {
           return next();
         }
+
         return res.render(profileTemplate, { pageTitle: profileTitle, user });
       } catch (error) {
         return next(error);

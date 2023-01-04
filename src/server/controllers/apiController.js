@@ -8,9 +8,32 @@ import UserVideoComment from "../models/UserVideoComment";
 import SubscribeUser from "../models/SubscribeUser";
 import UserVideoSubComment from "../models/UserVideoSubComment";
 import mongooseQuery from "../modules/mongooseQuery";
+import mongoose from "mongoose";
 
 const apiController = (function () {
   const apiController = {
+    async getHomeVideos(req, res, next) {
+      const {
+        query: { count },
+      } = req;
+
+      try {
+        const videos = await UserVideo.find()
+          .select("title thumbnail_url owner views create_at")
+          .skip(12 * count)
+          .limit(12)
+          .sort({ create_at: "desc" })
+          .populate({ path: "owner", select: "nickname avatar_url" });
+        if (!videos) {
+          return res.sendStatus(400);
+        }
+
+        return res.status(200).json(videos);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
     async sendAuthenticodeByEmail(req, res, next) {
       const { email } = req.query;
       const exists = await User.exists({ email });
@@ -105,6 +128,7 @@ const apiController = (function () {
         session: { user },
       } = req;
 
+      // 본인이 본인을 구독할 수는 없음
       if (id === user._id) {
         return res.sendStatus(400);
       }
@@ -192,9 +216,6 @@ const apiController = (function () {
     async postPlayUserVideo(req, res, next) {
       const {
         params: { id },
-      } = req;
-
-      const {
         session: { userVideo },
       } = req;
 
@@ -227,12 +248,8 @@ const apiController = (function () {
         session: { userVideo },
       } = req;
 
-      if (!userVideo) {
-        return res.sendStatus(400);
-      }
-
-      if (userVideo.id !== id) {
-        return res.sendStatus(400);
+      if (!userVideo || userVideo.id !== id) {
+        return res.sendStatus(200);
       }
 
       try {
@@ -343,9 +360,9 @@ const apiController = (function () {
           }),
         ]);
 
-        console.log("ASDF");
         res.status(200).json({
           id: comment._id,
+          userId: _id,
           nickname: user.nickname,
           avatarUrl: user.avatar_url,
           createAt: comment.create_at,
@@ -355,9 +372,175 @@ const apiController = (function () {
       }
     },
 
-    async putVideoComment(req, res, next) {},
+    async getScrollComments(req, res, next) {
+      const {
+        params: { id },
+        query: { count },
+        session: { user },
+      } = req;
 
-    async deleteVideoComment(req, res, next) {},
+      try {
+        const video = await UserVideo.findById(id)
+          .select("comments")
+          .populate({
+            path: "comments",
+            select: "-video -likes -sub_comments",
+            options: { sort: { create_at: -1 }, skip: 5 * count, limit: 5 },
+            populate: {
+              path: "owner",
+              select: "nickname avatar_url",
+            },
+          });
+        if (!video) {
+          return next();
+        }
+
+        const [commentLikeResults, subCommentResults] = await Promise.all([
+          mongooseQuery.getUserVideoCommentLikeCount(video.comments),
+          mongooseQuery.getUserVideoSubCommentCount(video.comments),
+        ]);
+
+        const commentInfo = {
+          likeCounts: [],
+          subCommentCounts: [],
+          isLiked: [],
+        };
+
+        for (let i = 0; i < video.comments.length; ++i) {
+          commentInfo.likeCounts.push(commentLikeResults[i]);
+          commentInfo.subCommentCounts.push(subCommentResults[i]);
+        }
+
+        if (user) {
+          const likePromises = [];
+          for (const comment of video.comments) {
+            likePromises.push(
+              UserVideoComment.exists({
+                _id: comment._id,
+                likes: user._id,
+              })
+            );
+          }
+          const results = await Promise.all(likePromises);
+          for (let i = 0; i < video.comments.length; ++i) {
+            if (results[i]) {
+              commentInfo.isLiked.push(true);
+            } else {
+              commentInfo.isLiked.push(false);
+            }
+          }
+        } else {
+          for (let i = 0; i < video.comments.length; ++i) {
+            commentInfo.isLiked.push(false);
+          }
+        }
+
+        return res.status(200).json({
+          comments: video.comments,
+          commentInfo,
+        });
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async getScrollSideVideo(req, res, next) {
+      const {
+        query: { userId, videoId, count },
+      } = req;
+
+      try {
+        const sideVideos = await UserVideo.find(
+          { owner: userId, _id: { $ne: videoId } },
+          "title thumbnail_url owner views create_at"
+        )
+          .skip(count * 6)
+          .limit(6)
+          .populate({ path: "owner", select: "nickname" });
+        if (!sideVideos) {
+          return res.sendStatus(400);
+        }
+
+        return res.status(200).json(sideVideos);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async putVideoComment(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+        body: { text },
+      } = req;
+
+      try {
+        const comment = await UserVideoComment.exists({
+          _id: id,
+          owner: user._id,
+        });
+        if (!comment) {
+          return res.sendStatus(400);
+        }
+
+        await UserVideoComment.findByIdAndUpdate(id, {
+          text,
+        });
+
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async deleteVideoComment(req, res, next) {
+      const {
+        params: { id },
+        session: {
+          user: { _id },
+        },
+      } = req;
+
+      try {
+        const comment = await UserVideoComment.findById(id)
+          .select("owner video sub_comments")
+          .populate({ path: "sub_comments", select: "owner" });
+        if (!comment) {
+          return res.sendStatus(400);
+        }
+
+        if (String(comment.owner) !== String(_id)) {
+          return res.sendStatus(400);
+        }
+
+        const promises = [];
+        comment.sub_comments.owner;
+        for (let sub_comment of comment.sub_comments) {
+          promises.push(
+            User.findByIdAndUpdate(sub_comment.owner, {
+              $pull: { user_video_sub_comments: sub_comment._id },
+            })
+          );
+          promises.push(UserVideoSubComment.findByIdAndDelete(sub_comment._id));
+        }
+        promises.push(UserVideoComment.findByIdAndDelete(id));
+        promises.push(
+          User.findByIdAndUpdate(_id, {
+            $pull: { user_video_comments: id },
+          })
+        );
+        promises.push(
+          UserVideo.findByIdAndUpdate(comment.video, {
+            $pull: { comments: comment._id },
+          })
+        );
+
+        await Promise.all(promises);
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
 
     async postVideoCommentLike(req, res, next) {
       const {
@@ -398,7 +581,6 @@ const apiController = (function () {
         });
 
         if (!isLiked) {
-          console.log(isLiked);
           return res.sendStatus(400);
         }
 
@@ -417,11 +599,10 @@ const apiController = (function () {
         params: { id },
         body: { toUserId, text },
         session: {
+          user,
           user: { _id },
         },
       } = req;
-
-      console.log("Asdf");
 
       try {
         const exists = await UserVideoComment.exists({ _id: id });
@@ -432,7 +613,6 @@ const apiController = (function () {
         let subComment;
         const regex = /[0-9a-f]{24}/;
         if (regex.test(toUserId)) {
-          console.log("태그 댓글 테스트");
           subComment = await UserVideoSubComment.create({
             text,
             to_user: toUserId,
@@ -447,11 +627,26 @@ const apiController = (function () {
           });
         }
 
-        await UserVideoComment.findByIdAndUpdate(id, {
-          $push: { sub_comments: subComment._id },
-        });
+        await Promise.all([
+          User.findByIdAndUpdate(_id, {
+            $push: { user_video_sub_comments: subComment._id },
+          }),
+          UserVideoComment.findByIdAndUpdate(id, {
+            $push: { sub_comments: subComment._id },
+          }),
+        ]);
 
-        res.sendStatus(200);
+        const resSubComment = {
+          owner: {
+            _id,
+            nickname: user.nickname,
+            avatar_url: user.avatar_url,
+          },
+          _id: subComment._id,
+          create_at: subComment.create_at,
+        };
+
+        res.status(200).json(resSubComment);
       } catch (error) {
         return next(error);
       }
@@ -476,6 +671,7 @@ const apiController = (function () {
           })
           .populate({
             path: "sub_comments",
+            options: { sort: { create_at: 1 } },
             populate: {
               path: "to_user",
               select: "nickname",
@@ -486,13 +682,27 @@ const apiController = (function () {
           return res.sendStatus(400);
         }
 
-        const [likeCounts, isLikes] = await Promise.all([
-          mongooseQuery.getUserVideoSubCommentLikeCount(comment.sub_comments),
-          mongooseQuery.isLikeUserVideoSubComments(
-            user._id,
+        let likeCounts;
+        let isLikes;
+        if (user) {
+          [likeCounts, isLikes] = await Promise.all([
+            mongooseQuery.getUserVideoSubCommentLikeCount(comment.sub_comments),
+            mongooseQuery.isLikeUserVideoSubComments(
+              user._id,
+              comment.sub_comments
+            ),
+          ]);
+        } else {
+          likeCounts = await mongooseQuery.getUserVideoSubCommentLikeCount(
             comment.sub_comments
-          ),
-        ]);
+          );
+
+          isLikes = new Array(likeCounts.length).fill(
+            false,
+            0,
+            likeCounts.length
+          );
+        }
 
         return res
           .status(200)
@@ -547,6 +757,58 @@ const apiController = (function () {
         await UserVideoSubComment.findByIdAndUpdate(id, {
           $pull: { likes: user._id },
         });
+
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async putVideoSubComment(req, res, next) {
+      const {
+        params: { id },
+        body: { text },
+        session: { user },
+      } = req;
+
+      try {
+        const exists = await UserVideoSubComment.exists({
+          _id: id,
+          owner: user._id,
+        });
+        if (!exists) {
+          return res.sendStatus(400);
+        }
+
+        await UserVideoSubComment.findByIdAndUpdate(id, { text });
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async deleteVideoSubComment(req, res, next) {
+      const {
+        params: { id },
+      } = req;
+
+      try {
+        const subComment = await UserVideoSubComment.findById(id).select(
+          "comment owner"
+        );
+        if (!subComment) {
+          return res.sendStatus(400);
+        }
+
+        await Promise.all([
+          User.findByIdAndUpdate(subComment.owner, {
+            $pull: { user_video_sub_comments: id },
+          }),
+          UserVideoComment.findByIdAndUpdate(subComment.comment, {
+            $pull: { sub_comments: id },
+          }),
+          UserVideoSubComment.findByIdAndDelete(id),
+        ]);
 
         return res.sendStatus(200);
       } catch (error) {

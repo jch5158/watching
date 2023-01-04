@@ -11,6 +11,6 @@ block contents
                 img(src=`/${user.avatar_url}`).profile-header__avatar
             div.profile-header__info
                 span=user.nickname
-                span #{user.subscribers.count} 명
+                span #{user.subscribers.length} 명
         if isLoggedIn && String(loggedInUser._id) !== String(user._id)
             button.profile-header__subscribe-btn 구독
