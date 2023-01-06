@@ -1,0 +1,13 @@
+.subscriber {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 20px;
+
+  .subscriber__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+}

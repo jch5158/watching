@@ -29,6 +29,9 @@ block contents
                         span  명
             if isLoggedIn
                 div 
+                    if String(loggedInUser._id) === String(video.owner._id)
+                        a(href=`/user-videos/${video._id}/edit`) 
+                            button.watch-user-video__edit-btn Edit
                     if isLiked
                         button.watch-user-video__like-btn.clicked
                             span #{video.likeCount.toLocaleString('ko-KR')}

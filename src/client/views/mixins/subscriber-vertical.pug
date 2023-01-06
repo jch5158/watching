@@ -1,0 +1,9 @@
+mixin subscriber-vertical(subscriber)
+    div.subscriber
+        a(href=`/users/${subscriber._id}`)
+            if subscriber.avatar_url.startsWith("http")
+                img.subscriber__avatar(src=`${subscriber.avatar_url}`)
+            else 
+                img.subscriber__avatar(src=`/${subscriber.avatar_url}`)
+        a(href=`/users/${subscriber._id}`)
+            span.subscriber__nickname #{subscriber.nickname}

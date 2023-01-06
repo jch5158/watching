@@ -6,6 +6,8 @@ import githubLogin from "../modules/githubLogin";
 import fileSystem from "../modules/fileSystem";
 import Subscriber from "../models/Subscriber";
 import SubscribeUser from "../models/SubscribeUser";
+import mongoose from "mongoose";
+import UserVideo from "../models/UserVideo";
 
 const userController = (() => {
   const loginTitle = "Login";
@@ -451,7 +453,13 @@ const userController = (() => {
     },
 
     async getProfile(req, res, next) {
-      const { id } = req.params;
+      const {
+        params: { id },
+        session: {
+          user: { _id },
+        },
+      } = req;
+
       try {
         const user = await User.findById(
           id,
@@ -463,12 +471,47 @@ const userController = (() => {
             select: "nickname avatar_url",
           },
         });
-
         if (!user) {
           return next();
         }
 
-        return res.render(profileTemplate, { pageTitle: profileTitle, user });
+        const videos = await UserVideo.find(
+          {
+            owner: id,
+          },
+          "title thumbnail_url owner views create_at"
+        )
+          .sort({ create_at: "desc" })
+          .limit(12)
+          .populate({ path: "owner", select: "nickname avatar_url" });
+
+        const subscriberCount = (
+          await Subscriber.aggregate([
+            {
+              $match: {
+                owner: mongoose.Types.ObjectId(id),
+              },
+            },
+            {
+              $project: { length: { $size: "$users" } },
+            },
+          ])
+        )[0].length;
+
+        const isSubscribed = (await Subscriber.exists({
+          owner: id,
+          users: _id,
+        }))
+          ? true
+          : false;
+
+        return res.render(profileTemplate, {
+          pageTitle: profileTitle,
+          user,
+          subscriberCount,
+          isSubscribed,
+          videos,
+        });
       } catch (error) {
         return next(error);
       }

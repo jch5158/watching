@@ -22,4 +22,19 @@ videoRouter
     userVideoController.postUploadVideo
   );
 
+videoRouter
+  .route("/:id([0-9a-f]{24})/edit")
+  .all(middlewares.onlyLoginMiddleware)
+  .get(userVideoController.getEditVideo)
+  .post(
+    middlewares.uploadUserVideoMiddleware,
+    [
+      body("title").exists().trim().isLength({ min: 1, max: 50 }),
+      body("description").trim().isLength({ min: 1, max: 400 }),
+      body("hashtags").trim().isLength({ max: 95 }),
+      middlewares.validateMiddleware,
+    ],
+    userVideoController.postEditVideo
+  );
+
 export default videoRouter;

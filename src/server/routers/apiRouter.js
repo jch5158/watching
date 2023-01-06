@@ -14,6 +14,28 @@ apiRouter
   .get(apiController.getHomeVideos);
 
 apiRouter
+  .route(`/profile/user-videos`)
+  .all([
+    query("count").exists().isNumeric({ min: 1 }),
+    query("channelId")
+      .exists()
+      .matches(/[0-9a-f]{24}/),
+    middlewares.validateApiMiddleware,
+  ])
+  .get(apiController.getProfileVideos);
+
+apiRouter
+  .route("/subscriber/vertical")
+  .all([
+    query("id")
+      .exists()
+      .matches(/[0-9a-f]{24}/),
+    query("count").exists().isNumeric({ min: 1 }),
+    middlewares.validateApiMiddleware,
+  ])
+  .get(apiController.getVerticalSubscriber);
+
+apiRouter
   .route("/users/email/authenticode")
   .get(
     [

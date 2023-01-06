@@ -6,6 +6,12 @@ const userVideoApi = (() => {
       return fetch(`/api/home/user-videos?${params}`);
     },
 
+    async getScrollProfileVideos(count, channelId) {
+      const config = { count, channelId };
+      const params = new URLSearchParams(config).toString();
+      return fetch(`/api/profile/user-videos?${params}`);
+    },
+
     async videoPlay(id) {
       return fetch(`/api/user-videos/${id}`, {
         method: "POST",

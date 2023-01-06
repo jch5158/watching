@@ -1,9 +1,11 @@
 extends ../../templates/main
+include ../../mixins/user-video
+include ../../mixins/subscriber-vertical
 
 block headers
     include ../../partials/profile-header
 block contents
-    div.profile-header
+    div(data-id=user._id).profile-header
         div.profile-header__info-container
             if user.avatar_url.startsWith("http")
                 img(src=user.avatar_url).profile-header__avatar
@@ -11,6 +13,20 @@ block contents
                 img(src=`/${user.avatar_url}`).profile-header__avatar
             div.profile-header__info
                 span=user.nickname
-                span #{user.subscribers.length} 명
+                span #{subscriberCount} 명
         if isLoggedIn && String(loggedInUser._id) !== String(user._id)
-            button.profile-header__subscribe-btn 구독
+            if isSubscribed
+                button(data-id=user._id).profile-header__subscribe-btn.clicked 구독중
+            else 
+                button(data-id=user._id).profile-header__subscribe-btn 구독
+    div.user-subscriber__text
+        span 구독자
+    div.user-subscriber
+        each subscriber in user.subscribers.users
+            +subscriber-vertical(subscriber)
+    div.user-video-container 
+        div.user-video-grid
+            each video in videos
+                +user-video(video)
+block scripts 
+    script(src="/assets/js/users/profile.js") 

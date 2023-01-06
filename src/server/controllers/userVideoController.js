@@ -10,10 +10,12 @@ import mongooseQuery from "../modules/mongooseQuery";
 const userVideoController = (() => {
   const homeTitle = "Home";
   const uploadTitle = "Upload Video";
+  const editTitle = "Edit Video";
 
   const homeTemplate = "screens/root/home";
   const uploadTemplate = "screens/user-videos/upload";
   const watchTemplate = "screens/user-videos/watch";
+  const editTemplate = "screens/user-videos/edit";
 
   const userVideoController = {
     async getHomeVideos(req, res, next) {
@@ -69,10 +71,15 @@ const userVideoController = (() => {
           owner: _id,
         });
 
-        await User.findByIdAndUpdate(_id, {
-          $push: { user_videos: video._id },
-        });
-        video.save(), req.flash("success", "비디오 업로드 성공");
+        req.session.user = await User.findByIdAndUpdate(
+          _id,
+          {
+            $push: { user_videos: video._id },
+          },
+          { new: true }
+        );
+
+        req.flash("success", "비디오 업로드 성공");
         return res.redirect(`/users/${_id}`);
       } catch (error) {
         fileSystem.fileExistsAndRemove(userVideo[0].path);
@@ -205,6 +212,85 @@ const userVideoController = (() => {
       } catch (error) {
         next(error);
       }
+    },
+
+    async getEditVideo(req, res, next) {
+      const {
+        params: { id },
+        session: { user },
+      } = req;
+
+      try {
+        const video = await UserVideo.findById(id);
+        if (!video) {
+          req.flash("warning", "비디오가 조회되지 않습니다.");
+          return next();
+        }
+
+        if (String(video.owner) !== String(user._id)) {
+          req.flash("warning", "비디오를 수정할 수 없습니다.");
+          return res.redirect("/");
+        }
+
+        res.render(editTemplate, { pageTitle: editTitle, video });
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async postEditVideo(req, res, next) {
+      const {
+        videoExists,
+        thumbnailExists,
+        params: { id },
+        session: {
+          user: { _id },
+        },
+        body: { title, description, hashtags },
+        files,
+      } = req;
+
+      const { userVideo, thumbnail } = files;
+
+      try {
+        const video = await UserVideo.findById(id);
+        if (!video) {
+          req.flash("warning", "비디오가 존재하지 않습니다.");
+          return next();
+        }
+
+        if (String(video.owner._id) !== String(_id)) {
+          req.flash("warning", "비디오를 수정할 수 없습니다.");
+          return res.redirect("/");
+        }
+
+        let updateVideo;
+        if (videoExists) {
+          updateVideo = userVideo[0].path;
+          fileSystem.fileExistsAndRemove(video.file_url);
+        } else {
+          updateVideo = video.file_url;
+        }
+
+        let updateThumbnail;
+        if (thumbnailExists) {
+          updateThumbnail = thumbnail[0].path;
+          fileSystem.fileExistsAndRemove(video.thumbnail_url);
+        } else {
+          updateThumbnail = video.thumbnail_url;
+        }
+
+        await UserVideo.findByIdAndUpdate(id, {
+          title,
+          description,
+          hashtags: UserVideo.formatHashtags(hashtags),
+          file_url: updateVideo,
+          thumbnail_url: updateThumbnail,
+        });
+
+        req.flash("success", "비디오 수정 성공");
+        return res.redirect(`/user-videos/${video._id}`);
+      } catch (error) {}
     },
   };
   return userVideoController;

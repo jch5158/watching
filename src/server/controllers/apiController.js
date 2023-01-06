@@ -34,6 +34,54 @@ const apiController = (function () {
       }
     },
 
+    async getProfileVideos(req, res, next) {
+      const {
+        query: { count, channelId },
+      } = req;
+
+      try {
+        const videos = await UserVideo.find({ owner: channelId })
+          .select("title thumbnail_url owner views create_at")
+          .skip(12 * count)
+          .limit(12)
+          .sort({ create_at: "desc" })
+          .populate({ path: "owner", select: "nickname avatar_url" });
+        if (!videos) {
+          return res.sendStatus(400);
+        }
+
+        return res.status(200).json(videos);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async getVerticalSubscriber(req, res, next) {
+      const {
+        query: { id, count },
+      } = req;
+
+      try {
+        const subscribers = await Subscriber.findOne(
+          { owner: id },
+          "users"
+        ).populate({
+          path: "users",
+          options: {
+            limit: 11,
+            skip: count * 11,
+          },
+          select: "nickname avatar_url",
+        });
+        if (!subscribers) {
+          return res.sendStatus(400);
+        }
+        return res.status(200).json(subscribers);
+      } catch (error) {
+        return next(error);
+      }
+    },
+
     async sendAuthenticodeByEmail(req, res, next) {
       const { email } = req.query;
       const exists = await User.exists({ email });

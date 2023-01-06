@@ -5,6 +5,22 @@
   height: 100px;
   box-sizing: border-box;
   padding: 0 100px;
+
+  .profile-header__subscribe-btn {
+    width: 100px;
+    height: 50px;
+    border-radius: 9999px;
+    cursor: pointer;
+    background-color: #f1f1f1;
+    &:active {
+      background-color: rgba(170, 170, 170, 1);
+    }
+  }
+
+  .clicked {
+    color: white;
+    background-color: rgba(120, 120, 120, 1);
+  }
 }
 
 .profile-header__info-container {
@@ -32,13 +48,31 @@
   }
 }
 
-.profile-header__subscribe-btn {
-  width: 70px;
-  height: 40px;
-  border-radius: 9999px;
-  cursor: pointer;
-  background-color: #f1f1f1;
-  &:active {
-    background-color: rgba(170, 170, 170, 1);
+.user-subscriber__text {
+  margin: 0 auto;
+  margin-top: 50px;
+  margin-bottom: 15px;
+  width: 80%;
+  > span {
+    font-size: 20px;
+    font-weight: 600;
   }
+}
+
+.user-subscriber {
+  display: flex;
+  background-color: #272727;
+  margin: 0 auto;
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: auto;
+  white-space: nowrap;
+  width: 80%;
+  height: 165px;
+}
+
+.user-video-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 70px;
 }

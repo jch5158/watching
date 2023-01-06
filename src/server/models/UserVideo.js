@@ -20,12 +20,16 @@ const userVideoSchema = mongoose.Schema({
 });
 
 userVideoSchema.static("formatHashtags", (hashtags) => {
-  return hashtags
-    .replace(/\s/gi, "")
-    .split(",")
-    .filter((element) => element !== "")
-    .slice(0, 5)
-    .map((word) => (word.startsWith("#") ? word : `#${word}`));
+  return [
+    ...new Set(
+      hashtags
+        .replace(/\s/gi, "")
+        .split(",")
+        .filter((element) => element !== "")
+        .slice(0, 5)
+        .map((word) => (word.startsWith("#") ? word : `#${word}`))
+    ),
+  ].join();
 });
 
 const UserVideo = mongoose.model("User_Video", userVideoSchema);

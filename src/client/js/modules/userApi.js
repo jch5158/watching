@@ -61,6 +61,12 @@ const userApi = (() => {
         method: "POST",
       });
     },
+
+    async getVerticalSubscriber(id, count) {
+      const config = { id, count };
+      const params = new URLSearchParams(config).toString();
+      return await fetch(`/api/subscriber/vertical?${params}`);
+    },
   };
 
   return userApi;
