@@ -20,12 +20,44 @@ const userVideoController = (() => {
   const userVideoController = {
     async getHomeVideos(req, res, next) {
       try {
-        const videos = await UserVideo.find()
+        const videos = await UserVideo.find(
+          {},
+          "title thumbnail_url views create_at"
+        )
           .sort({ create_at: "desc" })
           .populate({ path: "owner", select: "nickname avatar_url" })
           .limit(12);
 
         res.render(homeTemplate, { pageTitle: homeTitle, videos });
+      } catch (error) {
+        return next(error);
+      }
+    },
+
+    async getSearchVideos(req, res, next) {
+      let {
+        query: { keyword },
+      } = req;
+
+      if (keyword.startsWith("#")) {
+        keyword = keyword.substring(1);
+      }
+
+      try {
+        const videos = await UserVideo.find(
+          {
+            $or: [
+              { title: { $regex: new RegExp(`${keyword}`, "i") } },
+              { hashtags: { $regex: new RegExp(`#${keyword}`, "i") } },
+            ],
+          },
+          "title thumbnail_url views create_at"
+        )
+          .sort({ create_at: "desc" })
+          .populate({ path: "owner", select: "nickname avatar_url" })
+          .limit(12);
+
+        res.render(homeTemplate, { pageTitle: homeTitle, videos, keyword });
       } catch (error) {
         return next(error);
       }
@@ -196,6 +228,7 @@ const userVideoController = (() => {
 
           "title thumbnail_url owner views create_at"
         )
+          .sort({ create_at: -1 })
           .limit(6)
           .populate({ path: "owner", select: "nickname" });
         if (!sideVideos) {

@@ -8,6 +8,7 @@ const apiRouter = express.Router();
 apiRouter
   .route("/home/user-videos")
   .all([
+    query("keyword").isLength({ max: 50 }),
     query("count").exists().isNumeric({ min: 1 }),
     middlewares.validateApiMiddleware,
   ])

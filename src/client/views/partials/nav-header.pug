@@ -1,10 +1,12 @@
 a(href="/").header__logo
         i.fab.fa-youtube
+form(method="GET", action="/search").header__search-form 
+    input(type="text", name="keyword", maxLength="50", required).header__search-input
+    input(type="submit", id="search").display-none 
+    label(for="search") 
+        i.fas.fa-search.header-nav__search-i
 nav.header-nav 
     ul.header-nav__ul        
-        //- li
-        //-     a(href="/search")
-        //-         i.fas.fa-search.header-nav__i
         if !isLoggedIn
             li.header-nav__li
                 a(href="/users/login") Login

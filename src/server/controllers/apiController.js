@@ -14,19 +14,29 @@ const apiController = (function () {
   const apiController = {
     async getHomeVideos(req, res, next) {
       const {
-        query: { count },
+        query: { count, keyword },
       } = req;
 
+      let findQuery = {};
+      if (keyword) {
+        findQuery = {
+          $or: [
+            { title: { $regex: new RegExp(`${keyword}`, "i") } },
+            { hashtags: { $regex: new RegExp(`#${keyword}`, "i") } },
+          ],
+        };
+      }
+
       try {
-        const videos = await UserVideo.find()
+        const videos = await UserVideo.find(
+          findQuery,
+          "title thumbnail_url views create_at"
+        )
           .select("title thumbnail_url owner views create_at")
           .skip(12 * count)
           .limit(12)
           .sort({ create_at: "desc" })
           .populate({ path: "owner", select: "nickname avatar_url" });
-        if (!videos) {
-          return res.sendStatus(400);
-        }
 
         return res.status(200).json(videos);
       } catch (error) {

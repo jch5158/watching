@@ -4,9 +4,15 @@ include ../../mixins/user-video
 block headers
     include ../../partials/nav-header
 block contents
-    div.user-video-container
-        div.user-video-grid
-            each video in videos
-                +user-video(video)
+    if keyword
+        div.user-video-container(data-keyword=keyword)
+            div.user-video-grid
+                each video in videos
+                    +user-video(video)
+    else 
+        div.user-video-container
+            div.user-video-grid
+                each video in videos
+                    +user-video(video)
 block scripts 
     script(src="/assets/js/root/home.js") 

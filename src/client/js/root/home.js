@@ -73,6 +73,8 @@ const makeVideo = (video) => {
 const endScrollEventHandler = (() => {
   let count = 1;
   let eventFlag = true;
+  const videoContainer = document.querySelector(".user-video-container");
+  const keyword = videoContainer.dataset.keyword;
   return async () => {
     if (
       eventFlag &&
@@ -80,7 +82,7 @@ const endScrollEventHandler = (() => {
     ) {
       eventFlag = false;
 
-      const result = await userVideoApi.getVideos(count);
+      const result = await userVideoApi.getVideos(count, keyword);
       if (result.status !== 200) {
         return;
       }

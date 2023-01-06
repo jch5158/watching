@@ -56,7 +56,7 @@ block contents
                 span #{video.description}
             div
                 each hashtag in video.hashtags
-                    a(href="") 
+                    a(href=`/search?${new URLSearchParams({keyword:hashtag}).toString()}`) 
                         span.watch-user-video__hashtags #{hashtag}, 
     div.user-video-comments
         span 댓글 
