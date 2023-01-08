@@ -1,0 +1,20 @@
+.user-video-edit__delete-div {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+
+  .user-video-edit__delete-btn {
+    width: 400px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 500;
+
+    &:hover {
+      cursor: pointer;
+    }
+    &:active {
+      background-color: rgba(170, 170, 170, 1);
+    }
+  }
+}

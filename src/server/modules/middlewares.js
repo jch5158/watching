@@ -1,5 +1,7 @@
 import multer from "multer";
 import { validationResult } from "express-validator";
+import fileSystem from "./fileSystem";
+import { getLogFileNameFormat, getDateFormat } from "../modules/common";
 
 const middlewares = (function () {
   const middlewares = {
@@ -17,8 +19,12 @@ const middlewares = (function () {
       });
     },
 
-    error500Middleware(err, req, res, next) {
-      console.log(err);
+    async error500Middleware(err, req, res, next) {
+      await fileSystem.appendFile(
+        `${process.cwd()}/error-log/${getLogFileNameFormat(new Date())}.log`,
+        `[${getDateFormat(new Date())}] ${err.stack}`
+      );
+      res.status(500);
       return res.render("screens/root/error", {
         pageTitle: 500,
         status: 500,

@@ -1,7 +1,10 @@
 const userVideoApi = (() => {
   const userVideoApi = {
     async getVideos(count, keyword) {
-      const config = { count, keyword };
+      const config = { count };
+      if (keyword) {
+        config.keyword = keyword;
+      }
       const params = new URLSearchParams(config).toString();
       return fetch(`/api/home/user-videos?${params}`);
     },

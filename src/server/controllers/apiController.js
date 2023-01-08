@@ -8,6 +8,7 @@ import UserVideoComment from "../models/UserVideoComment";
 import SubscribeUser from "../models/SubscribeUser";
 import UserVideoSubComment from "../models/UserVideoSubComment";
 import mongooseQuery from "../modules/mongooseQuery";
+import fileSystem from "../modules/fileSystem";
 import mongoose from "mongoose";
 
 const apiController = (function () {
@@ -30,13 +31,17 @@ const apiController = (function () {
       try {
         const videos = await UserVideo.find(
           findQuery,
-          "title thumbnail_url views create_at"
-        )
-          .select("title thumbnail_url owner views create_at")
-          .skip(12 * count)
-          .limit(12)
-          .sort({ create_at: "desc" })
-          .populate({ path: "owner", select: "nickname avatar_url" });
+          "title thumbnail_url views create_at",
+          {
+            skip: 12 * count,
+            limit: 12,
+            sort: { create_at: "desc" },
+            populate: {
+              path: "owner",
+              select: "nickname avatar_url",
+            },
+          }
+        );
 
         return res.status(200).json(videos);
       } catch (error) {
@@ -50,12 +55,19 @@ const apiController = (function () {
       } = req;
 
       try {
-        const videos = await UserVideo.find({ owner: channelId })
-          .select("title thumbnail_url owner views create_at")
-          .skip(12 * count)
-          .limit(12)
-          .sort({ create_at: "desc" })
-          .populate({ path: "owner", select: "nickname avatar_url" });
+        const videos = await UserVideo.find(
+          { owner: channelId },
+          "title thumbnail_url owner views create_at",
+          {
+            skip: 12 * count,
+            limit: 12,
+            sort: { create_at: -1 },
+            populate: {
+              path: "owner",
+              select: "nickname avatar_url",
+            },
+          }
+        );
         if (!videos) {
           return res.sendStatus(400);
         }
@@ -72,17 +84,17 @@ const apiController = (function () {
       } = req;
 
       try {
-        const subscribers = await Subscriber.findOne(
-          { owner: id },
-          "users"
-        ).populate({
-          path: "users",
-          options: {
-            limit: 11,
-            skip: count * 11,
+        const subscribers = await Subscriber.findOne({ owner: id }, "users", {
+          populate: {
+            path: "users",
+            options: {
+              limit: 11,
+              skip: count * 11,
+            },
+            select: "nickname avatar_url",
           },
-          select: "nickname avatar_url",
         });
+
         if (!subscribers) {
           return res.sendStatus(400);
         }
@@ -191,7 +203,9 @@ const apiController = (function () {
         return res.sendStatus(400);
       }
 
+      let session;
       try {
+        session = await mongoose.startSession();
         const [isSubscriber, isSubscribeUsers] = await Promise.all([
           Subscriber.exists({ owner: id, users: user._id }),
           SubscribeUser.exists({ owner: user._id, users: id }),
@@ -201,28 +215,32 @@ const apiController = (function () {
           return res.sendStatus(400);
         }
 
-        await Promise.all([
-          Subscriber.findOneAndUpdate(
-            { owner: id },
-            {
-              $push: {
-                users: user._id,
-              },
-            }
-          ),
-          SubscribeUser.findOneAndUpdate(
-            { owner: user._id },
-            {
-              $push: {
-                users: id,
-              },
-            }
-          ),
-        ]);
+        await session.withTransaction(async () => {
+          await Promise.all([
+            Subscriber.findOneAndUpdate(
+              { owner: id },
+              {
+                $push: {
+                  users: user._id,
+                },
+              }
+            ),
+            SubscribeUser.findOneAndUpdate(
+              { owner: user._id },
+              {
+                $push: {
+                  users: id,
+                },
+              }
+            ),
+          ]);
+        });
 
         res.sendStatus(200);
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -236,7 +254,9 @@ const apiController = (function () {
         res.sendStatus(400);
       }
 
+      let session;
       try {
+        session = await mongoose.startSession();
         const [isSubscriber, isSubscribeUsers] = await Promise.all([
           Subscriber.exists({ owner: id, users: user._id }),
           SubscribeUser.exists({ owner: user._id, users: id }),
@@ -246,28 +266,32 @@ const apiController = (function () {
           return res.sendStatus(400);
         }
 
-        await Promise.all([
-          Subscriber.findOneAndUpdate(
-            { owner: id },
-            {
-              $pull: {
-                users: user._id,
-              },
-            }
-          ),
-          SubscribeUser.findOneAndUpdate(
-            { owner: user._id },
-            {
-              $pull: {
-                users: id,
-              },
-            }
-          ),
-        ]);
+        await session.withTransaction(async () => {
+          await Promise.all([
+            Subscriber.findOneAndUpdate(
+              { owner: id },
+              {
+                $pull: {
+                  users: user._id,
+                },
+              }
+            ),
+            SubscribeUser.findOneAndUpdate(
+              { owner: user._id },
+              {
+                $pull: {
+                  users: id,
+                },
+              }
+            ),
+          ]);
+        });
 
         res.sendStatus(200);
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -329,6 +353,43 @@ const apiController = (function () {
         return res.sendStatus(200);
       } catch (error) {
         return next(error);
+      }
+    },
+
+    async deleteUserVideo(req, res, next) {
+      const {
+        session: { user },
+        params: { id },
+      } = req;
+
+      let session;
+      try {
+        session = await mongoose.startSession();
+        const video = await UserVideo.findById(id).populate({
+          path: "comments",
+          populate: {
+            path: "sub_comments",
+            select: "owner",
+          },
+        });
+        if (String(video.owner) !== String(user._id)) {
+          return res.sendStatus(400);
+        }
+
+        await Promise.all([
+          fileSystem.fileExistsAndRemove(video.file_url),
+          fileSystem.fileExistsAndRemove(video.thumbnail_url),
+        ]);
+
+        await session.withTransaction(async () => {
+          await mongooseQuery.deleteUserVideo(video, session);
+        });
+
+        return res.sendStatus(200);
+      } catch (error) {
+        return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -397,26 +458,38 @@ const apiController = (function () {
         body: { videoId, text },
       } = req;
 
+      let session;
       try {
+        session = await mongoose.startSession();
         const videoExists = await UserVideo.exists({ _id: videoId });
         if (!videoExists) {
           return res.sendStatus(400);
         }
 
-        const comment = await UserVideoComment.create({
-          text,
-          owner: _id,
-          video: videoId,
-        });
+        let comment;
+        await session.withTransaction(async () => {
+          comment = (
+            await UserVideoComment.create(
+              [
+                {
+                  text,
+                  owner: _id,
+                  video: videoId,
+                },
+              ],
+              { session }
+            )
+          )[0];
 
-        await Promise.all([
-          User.findByIdAndUpdate(_id, {
-            $push: { user_video_comments: comment._id },
-          }),
-          UserVideo.findByIdAndUpdate(videoId, {
-            $push: { comments: comment._id },
-          }),
-        ]);
+          await Promise.all([
+            User.findByIdAndUpdate(_id, {
+              $push: { user_video_comments: comment._id },
+            }),
+            UserVideo.findByIdAndUpdate(videoId, {
+              $push: { comments: comment._id },
+            }),
+          ]);
+        });
 
         res.status(200).json({
           id: comment._id,
@@ -427,6 +500,8 @@ const apiController = (function () {
         });
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -438,9 +513,8 @@ const apiController = (function () {
       } = req;
 
       try {
-        const video = await UserVideo.findById(id)
-          .select("comments")
-          .populate({
+        const video = await UserVideo.findById(id, "comments", {
+          populate: {
             path: "comments",
             select: "-video -likes -sub_comments",
             options: { sort: { create_at: -1 }, skip: 5 * count, limit: 5 },
@@ -448,7 +522,8 @@ const apiController = (function () {
               path: "owner",
               select: "nickname avatar_url",
             },
-          });
+          },
+        });
         if (!video) {
           return next();
         }
@@ -510,11 +585,15 @@ const apiController = (function () {
       try {
         const sideVideos = await UserVideo.find(
           { owner: userId, _id: { $ne: videoId } },
-          "title thumbnail_url owner views create_at"
-        )
-          .skip(count * 6)
-          .limit(6)
-          .populate({ path: "owner", select: "nickname" });
+          "title thumbnail_url owner views create_at",
+          {
+            skip: count * 6,
+            limit: 6,
+            sort: { create_at: -1 },
+            populate: { path: "owner", select: "nickname" },
+          }
+        );
+
         if (!sideVideos) {
           return res.sendStatus(400);
         }
@@ -559,7 +638,9 @@ const apiController = (function () {
         },
       } = req;
 
+      let session;
       try {
+        session = await mongoose.startSession();
         const comment = await UserVideoComment.findById(id)
           .select("owner video sub_comments")
           .populate({ path: "sub_comments", select: "owner" });
@@ -571,32 +652,15 @@ const apiController = (function () {
           return res.sendStatus(400);
         }
 
-        const promises = [];
-        comment.sub_comments.owner;
-        for (let sub_comment of comment.sub_comments) {
-          promises.push(
-            User.findByIdAndUpdate(sub_comment.owner, {
-              $pull: { user_video_sub_comments: sub_comment._id },
-            })
-          );
-          promises.push(UserVideoSubComment.findByIdAndDelete(sub_comment._id));
-        }
-        promises.push(UserVideoComment.findByIdAndDelete(id));
-        promises.push(
-          User.findByIdAndUpdate(_id, {
-            $pull: { user_video_comments: id },
-          })
-        );
-        promises.push(
-          UserVideo.findByIdAndUpdate(comment.video, {
-            $pull: { comments: comment._id },
-          })
-        );
+        await session.withTransaction(async () => {
+          await mongooseQuery.deleteComment(comment, session);
+        });
 
-        await Promise.all(promises);
         return res.sendStatus(200);
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -662,37 +726,68 @@ const apiController = (function () {
         },
       } = req;
 
+      let session;
       try {
+        session = await mongoose.startSession();
         const exists = await UserVideoComment.exists({ _id: id });
         if (!exists) {
           return res.sendStatus(400);
         }
 
         let subComment;
-        const regex = /[0-9a-f]{24}/;
-        if (regex.test(toUserId)) {
-          subComment = await UserVideoSubComment.create({
-            text,
-            to_user: toUserId,
-            comment: id,
-            owner: _id,
-          });
-        } else {
-          subComment = await UserVideoSubComment.create({
-            text,
-            comment: id,
-            owner: _id,
-          });
-        }
+        await session.withTransaction(async () => {
+          const regex = /[0-9a-f]{24}/;
+          if (regex.test(toUserId)) {
+            const exists = await User.exists({ _id: toUserId });
+            if (!exists) {
+              await session.abortTransaction();
+              return;
+            }
+            subComment = (
+              await UserVideoSubComment.create(
+                [
+                  {
+                    text,
+                    to_user: toUserId,
+                    comment: id,
+                    owner: _id,
+                  },
+                ],
+                { session }
+              )
+            )[0];
+          } else {
+            subComment = (
+              await UserVideoSubComment.create(
+                [
+                  {
+                    text,
+                    comment: id,
+                    owner: _id,
+                  },
+                ],
+                { session }
+              )
+            )[0];
+          }
 
-        await Promise.all([
-          User.findByIdAndUpdate(_id, {
-            $push: { user_video_sub_comments: subComment._id },
-          }),
-          UserVideoComment.findByIdAndUpdate(id, {
-            $push: { sub_comments: subComment._id },
-          }),
-        ]);
+          await Promise.all([
+            User.findByIdAndUpdate(
+              _id,
+              {
+                $push: { user_video_sub_comments: subComment._id },
+              },
+              { session }
+            ),
+            UserVideoComment.findByIdAndUpdate(
+              id,
+              {
+                $push: { sub_comments: subComment._id },
+              },
+              { session }
+            ),
+          ]);
+        });
 
         const resSubComment = {
           owner: {
@@ -707,6 +802,8 @@ const apiController = (function () {
         res.status(200).json(resSubComment);
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -717,8 +814,7 @@ const apiController = (function () {
       } = req;
 
       try {
-        const comment = await UserVideoComment.findById(id)
-          .select("sub_comments")
+        const comment = await UserVideoComment.findById(id, "sub_comments")
           .populate({
             path: "sub_comments",
             select: "-likes",
@@ -850,27 +946,42 @@ const apiController = (function () {
         params: { id },
       } = req;
 
+      let session;
       try {
-        const subComment = await UserVideoSubComment.findById(id).select(
+        session = await mongoose.startSession();
+        const subComment = await UserVideoSubComment.findById(
+          id,
           "comment owner"
         );
         if (!subComment) {
           return res.sendStatus(400);
         }
 
-        await Promise.all([
-          User.findByIdAndUpdate(subComment.owner, {
-            $pull: { user_video_sub_comments: id },
-          }),
-          UserVideoComment.findByIdAndUpdate(subComment.comment, {
-            $pull: { sub_comments: id },
-          }),
-          UserVideoSubComment.findByIdAndDelete(id),
-        ]);
+        await session.withTransaction(async () => {
+          await Promise.all([
+            User.findByIdAndUpdate(
+              subComment.owner,
+              {
+                $pull: { user_video_sub_comments: id },
+              },
+              { session }
+            ),
+            UserVideoComment.findByIdAndUpdate(
+              subComment.comment,
+              {
+                $pull: { sub_comments: id },
+              },
+              { session }
+            ),
+            UserVideoSubComment.findByIdAndDelete(id, { session }),
+          ]);
+        });
 
         return res.sendStatus(200);
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
   };

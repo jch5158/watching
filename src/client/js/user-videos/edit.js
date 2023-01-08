@@ -11,6 +11,9 @@ const hashtagsResultSpan = document.querySelector(
   ".vidoe-form__hashtags-result"
 );
 
+const videoForm = document.querySelector(".video-form");
+const deleteBtn = document.querySelector(".user-video-edit__delete-btn");
+
 changeVideoHandler = (event) => {
   const { name } = event.target.files[0];
   videoNameSpan.innerText = name;
@@ -46,6 +49,27 @@ hashtagsInputHandler = (event) => {
   ].join();
 };
 
+const deleveVideoHandler = async () => {
+  const id = videoForm.dataset.id;
+  const userId = videoForm.dataset.user_id;
+  const result = confirm("정말로 비디오를 삭제하시겠습니까?");
+  if (!result) {
+    return;
+  }
+
+  const res = await fetch(`/api/user-videos/${id}`, {
+    method: "DELETE",
+  });
+
+  if (res.status !== 200) {
+    alert("비디오 삭제를 할 수 없습니다.");
+    return;
+  }
+
+  window.location.href = `/users/${userId}`;
+};
+
 videoInput.addEventListener("change", changeVideoHandler);
 videoThumbnailInput.addEventListener("change", changeThumbnailHandler);
 hashtagsInput.addEventListener("input", hashtagsInputHandler);
+deleteBtn.addEventListener("click", deleveVideoHandler);

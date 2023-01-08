@@ -6,7 +6,7 @@ import githubLogin from "../modules/githubLogin";
 import fileSystem from "../modules/fileSystem";
 import Subscriber from "../models/Subscriber";
 import SubscribeUser from "../models/SubscribeUser";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import UserVideo from "../models/UserVideo";
 
 const userController = (() => {
@@ -82,7 +82,9 @@ const userController = (() => {
             }
           });
 
+          let session;
           try {
+            session = await mongoose.startSession();
             const [emailExists, nicknameExists] = await Promise.all([
               User.exists({ email }),
               User.exists({ nickname }),
@@ -104,31 +106,53 @@ const userController = (() => {
                 .render(joinTemplate, { pageTitle: joinTitle });
             }
 
-            const user = await User.create({
-              name,
-              email,
-              nickname,
-              password,
-              avatar_url: path,
+            await session.withTransaction(async () => {
+              const user = (
+                await User.create(
+                  [
+                    {
+                      name,
+                      email,
+                      nickname,
+                      password,
+                      avatar_url: path,
+                    },
+                  ],
+                  { session }
+                )
+              )[0];
+
+              const [subscribers, subscribeUsers] = await Promise.all([
+                Subscriber.create(
+                  [
+                    {
+                      owner: user._id,
+                    },
+                  ],
+                  { session }
+                ),
+                SubscribeUser.create(
+                  [
+                    {
+                      owner: user._id,
+                    },
+                  ],
+                  { session }
+                ),
+              ]);
+
+              user.subscribers = subscribers[0]._id;
+              user.subscribe_users = subscribeUsers[0]._id;
+              await user.save();
             });
 
-            const [subscribers, subscribeUsers] = await Promise.all([
-              Subscriber.create({
-                owner: user._id,
-              }),
-              SubscribeUser.create({
-                owner: user._id,
-              }),
-            ]);
-
-            user.subscribers = subscribers._id;
-            user.subscribe_users = subscribeUsers._id;
-            await user.save();
             req.flash("success", joingSuccess);
             return res.redirect("/users/login");
           } catch (error) {
             fileSystem.fileExistsAndRemove(path);
             return next(error);
+          } finally {
+            await session.endSession();
           }
         }
       );
@@ -185,21 +209,21 @@ const userController = (() => {
                 return res.redirect("/");
               });
             });
+          } else {
+            const newSessionId = req.cookies["connect.sid"]
+              .substring(2)
+              .split(".")[0];
+            redisClient.set(email, newSessionId, (error, result) => {
+              if (error) {
+                return next(error);
+              }
+
+              req.session.isLoggedIn = true;
+              req.session.user = user;
+              req.flash("success", loginSuccess);
+              return res.redirect("/");
+            });
           }
-
-          const newSessionId = req.cookies["connect.sid"]
-            .substring(2)
-            .split(".")[0];
-          redisClient.set(email, newSessionId, (error, result) => {
-            if (error) {
-              return next(error);
-            }
-
-            req.session.isLoggedIn = true;
-            req.session.user = user;
-            req.flash("success", loginSuccess);
-            return res.redirect("/");
-          });
         });
       } catch (error) {
         return next(error);
@@ -223,7 +247,9 @@ const userController = (() => {
     async getFinishKakaoLogin(req, res, next) {
       const { code } = req.query;
 
+      let session;
       try {
+        session = await mongoose.startSession();
         const access_token = await kakaoLogin.getKakaoAccessToken(code);
         if (!access_token) {
           req.flash("warning", loginFailed);
@@ -263,27 +289,47 @@ const userController = (() => {
           } else {
             isOverlapNickname = true;
           }
-          user = await User.create({
-            name: profile.nickname,
-            email: kakao_account.email,
-            nickname,
-            password: "",
-            sns_account: true,
-            avatar_url: profile.profile_image_url,
+
+          await session.withTransaction(async () => {
+            user = (
+              await User.create(
+                [
+                  {
+                    name: profile.nickname,
+                    email: kakao_account.email,
+                    nickname,
+                    password: "",
+                    sns_account: true,
+                    avatar_url: profile.profile_image_url,
+                  },
+                ],
+                { session }
+              )
+            )[0];
+
+            const [subscribers, subscribeUsers] = await Promise.all([
+              Subscriber.create(
+                [
+                  {
+                    owner: user._id,
+                  },
+                ],
+                { session }
+              ),
+              SubscribeUser.create(
+                [
+                  {
+                    owner: user._id,
+                  },
+                ],
+                { session }
+              ),
+            ]);
+
+            user.subscribers = subscribers[0]._id;
+            user.subscribe_users = subscribeUsers[0]._id;
+            await user.save();
           });
-
-          const [subscribers, subscribeUsers] = await Promise.all([
-            Subscriber.create({
-              owner: user._id,
-            }),
-            SubscribeUser.create({
-              owner: user._id,
-            }),
-          ]);
-
-          user.subscribers = subscribers._id;
-          user.subscribe_users = subscribeUsers._id;
-          await user.save();
         }
 
         redisClient.get(user.email, (error, sessionId) => {
@@ -333,6 +379,8 @@ const userController = (() => {
         });
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -344,7 +392,9 @@ const userController = (() => {
     async getFinishGithubLogin(req, res, next) {
       const { code } = req.query;
 
+      let session;
       try {
+        session = await mongoose.startSession();
         const access_token = await githubLogin.getGithubAccessToken(code);
         if (!access_token) {
           req.flash("warning", loginFailed);
@@ -373,27 +423,47 @@ const userController = (() => {
           } else {
             isOverlapNickname = true;
           }
-          user = await User.create({
-            name: userData.name,
-            email: emailObj.email,
-            nickname,
-            password: "",
-            sns_account: true,
-            avatar_url: userData.avatar_url,
+
+          await session.withTransaction(async () => {
+            user = (
+              await User.create(
+                [
+                  {
+                    name: userData.name,
+                    email: emailObj.email,
+                    nickname,
+                    password: "",
+                    sns_account: true,
+                    avatar_url: userData.avatar_url,
+                  },
+                ],
+                { session }
+              )
+            )[0];
+
+            const [subscribers, subscribeUsers] = await Promise.all([
+              Subscriber.create(
+                [
+                  {
+                    owner: user._id,
+                  },
+                ],
+                { session }
+              ),
+              SubscribeUser.create(
+                [
+                  {
+                    owner: user._id,
+                  },
+                ],
+                { session }
+              ),
+            ]);
+
+            user.subscribers = subscribers[0]._id;
+            user.subscribe_users = subscribeUsers[0]._id;
+            await user.save();
           });
-
-          const [subscribers, subscribeUsers] = await Promise.all([
-            Subscriber.create({
-              owner: user._id,
-            }),
-            SubscribeUser.create({
-              owner: user._id,
-            }),
-          ]);
-
-          user.subscribers = subscribers._id;
-          user.subscribe_users = subscribeUsers._id;
-          await user.save();
         }
 
         redisClient.get(user.email, (error, sessionId) => {
@@ -443,6 +513,8 @@ const userController = (() => {
         });
       } catch (error) {
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -463,14 +535,18 @@ const userController = (() => {
       try {
         const user = await User.findById(
           id,
-          "nickname avatar_url subscribers"
-        ).populate({
-          path: "subscribers",
-          populate: {
-            path: "users",
-            select: "nickname avatar_url",
-          },
-        });
+          "nickname avatar_url subscribers",
+          {
+            populate: {
+              path: "subscribers",
+              populate: {
+                path: "users",
+                select: "nickname avatar_url",
+              },
+            },
+          }
+        );
+
         if (!user) {
           return next();
         }
@@ -479,11 +555,13 @@ const userController = (() => {
           {
             owner: id,
           },
-          "title thumbnail_url owner views create_at"
-        )
-          .sort({ create_at: "desc" })
-          .limit(12)
-          .populate({ path: "owner", select: "nickname avatar_url" });
+          "title thumbnail_url owner views create_at",
+          {
+            limit: 12,
+            sort: { create_at: -1 },
+            populate: { path: "owner", select: "nickname avatar_url" },
+          }
+        );
 
         const subscriberCount = (
           await Subscriber.aggregate([
@@ -531,11 +609,6 @@ const userController = (() => {
       } = req;
 
       try {
-        const path = file?.path;
-        if (path && !avatar_url.startsWith("http")) {
-          fileSystem.fileExistsAndRemove(avatar_url);
-        }
-
         if (nickname !== newNickname) {
           const exists = await User.exists({ nickname: newNickname });
           if (exists) {
@@ -546,11 +619,16 @@ const userController = (() => {
           }
         }
 
+        const path = file?.path;
+        if (path && !avatar_url.startsWith("http")) {
+          fileSystem.fileExistsAndRemove(avatar_url);
+        }
+
         req.session.user = await User.findByIdAndUpdate(
           _id,
           {
             nickname: nickname === newNickname ? nickname : newNickname,
-            avatar_url: avatar_url === path ? avatar_url : path,
+            avatar_url: path ? path : avatar_url,
           },
           { new: true }
         );

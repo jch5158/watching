@@ -4,22 +4,40 @@ import redisClient from "./initRedis";
 import connectRedis from "connect-redis";
 import flash from "express-flash";
 import morgan from "morgan";
+import fs from "fs";
 import apiRouter from "../routers/apiRouter";
 import rootRouter from "../routers/rootRouter";
 import userRouter from "../routers/userRouter";
 import userVideoRouter from "../routers/userVideoRouter";
 import middlewares from "../modules/middlewares";
 import cookieParser from "cookie-parser";
+import fileSystem from "../modules/fileSystem";
+import { getLogFileNameFormat, getDateFormat } from "../modules/common";
 
 const app = express();
-const logger = morgan("dev");
+
 const RedisStore = connectRedis(session);
 
 app.set("port", process.env.PORT);
 app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/client/views");
 
-app.use(logger);
+if (process.env.SERVER_ENV === "dev") {
+  app.use(morgan("dev"));
+} else {
+  const accessLogStream = (() => {
+    const folderPath = `${process.cwd()}/access-log`;
+    fileSystem.folderExistsAndCreateSync(folderPath);
+    return fs.createWriteStream(
+      `${folderPath}/${getLogFileNameFormat(new Date())}.log`,
+      {
+        flags: "a",
+      }
+    );
+  })();
+  app.use(morgan("combined", { stream: accessLogStream }));
+}
+
 app.use("/uploads", express.static("uploads")); // 브라우저가 upload 폴더에 접근할 수 있도록 등록
 app.use("/assets", express.static("assets")); // 브라우저가 assets 폴더에 접근할 수 있도록 등록
 app.use("/resources", express.static("resources"));

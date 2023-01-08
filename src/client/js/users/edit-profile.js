@@ -11,7 +11,7 @@ const nicknameResultSpan = document.querySelector(
   ".user-form__nickname-result"
 );
 
-const changeAvatarImgHandler = () => {
+const changeAvatarImgHandler = (() => {
   let fileUrl;
   return (event) => {
     if (fileUrl) {
@@ -21,7 +21,7 @@ const changeAvatarImgHandler = () => {
     fileUrl = URL.createObjectURL(file);
     uploadAvatar.src = fileUrl;
   };
-};
+})();
 
 const confirmNicknameHandler = async () => {
   const nickname = nicknameInput.value;

@@ -4,7 +4,7 @@ block headers
     include ../../partials/header
 block contents
     span.title Edit Video
-    form(method="POST", id="video-form", enctype="multipart/form-data").video-form
+    form(method="POST", id="video-form", enctype="multipart/form-data", data-id=video._id, data-user_id=userId).video-form
         div.video-form__container
             if video.thumbnail_url.startsWith("http")
                 img(src=`${video.thumbnail_url}`).video-form__thumbnail
@@ -22,5 +22,7 @@ block contents
         input(type="text", name="hashtags" placeholder="Hashtags (최대 5개 등록 가능합니다.)", maxLength="90", value=video.hashtags.map((word) => (word.startsWith("#") ? word.substring(1) : word)).join()).video-form__hashtags
         span.vidoe-form__hashtags-result #{video.hashtags.join()}
         input(type="submit", value="Edit")
+    div.user-video-edit__delete-div
+        button.user-video-edit__delete-btn delete
 block scripts 
     script(src="/assets/js/user-videos/edit.js") 

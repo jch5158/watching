@@ -29,7 +29,7 @@ userVideoSchema.static("formatHashtags", (hashtags) => {
         .slice(0, 5)
         .map((word) => (word.startsWith("#") ? word : `#${word}`))
     ),
-  ].join();
+  ];
 });
 
 const UserVideo = mongoose.model("User_Video", userVideoSchema);

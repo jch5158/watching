@@ -4,7 +4,7 @@ import Subscriber from "../models/Subscriber";
 import fileSystem from "../modules/fileSystem";
 import { getVideoDurationInSeconds } from "get-video-duration";
 import UserVideoComment from "../models/UserVideoComment";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import mongooseQuery from "../modules/mongooseQuery";
 
 const userVideoController = (() => {
@@ -22,11 +22,16 @@ const userVideoController = (() => {
       try {
         const videos = await UserVideo.find(
           {},
-          "title thumbnail_url views create_at"
-        )
-          .sort({ create_at: "desc" })
-          .populate({ path: "owner", select: "nickname avatar_url" })
-          .limit(12);
+          "title thumbnail_url views create_at",
+          {
+            limit: 12,
+            sort: { create_at: -1 },
+            populate: {
+              path: "owner",
+              select: "nickname avatar_url",
+            },
+          }
+        );
 
         res.render(homeTemplate, { pageTitle: homeTitle, videos });
       } catch (error) {
@@ -51,13 +56,15 @@ const userVideoController = (() => {
               { hashtags: { $regex: new RegExp(`#${keyword}`, "i") } },
             ],
           },
-          "title thumbnail_url views create_at"
-        )
-          .sort({ create_at: "desc" })
-          .populate({ path: "owner", select: "nickname avatar_url" })
-          .limit(12);
+          "title thumbnail_url views create_at",
+          {
+            limit: 12,
+            sort: { create_at: -1 },
+            populate: { path: "owner", select: "nickname avatar_url" },
+          }
+        );
 
-        res.render(homeTemplate, { pageTitle: homeTitle, videos, keyword });
+        res.render(homeTemplate, { pageTitle: keyword, videos, keyword });
       } catch (error) {
         return next(error);
       }
@@ -87,29 +94,37 @@ const userVideoController = (() => {
         return res.render(uploadTemplate, { pageTitle: uploadTitle });
       }
       const { userVideo, thumbnail } = files;
-      try {
-        const user = await User.exists({ _id });
-        if (!user) {
-          throw new Error("User가 조회되지 않습니다.");
-        }
-        const duration = await getVideoDurationInSeconds(userVideo[0].path);
-        const video = await UserVideo.create({
-          title,
-          description,
-          file_url: userVideo[0].path,
-          thumbnail_url: thumbnail[0].path,
-          hashtags: UserVideo.formatHashtags(hashtags),
-          duration_in_seconds: duration,
-          owner: _id,
-        });
 
-        req.session.user = await User.findByIdAndUpdate(
-          _id,
-          {
-            $push: { user_videos: video._id },
-          },
-          { new: true }
-        );
+      let session;
+      try {
+        session = await mongoose.startSession();
+        const duration = await getVideoDurationInSeconds(userVideo[0].path);
+        await session.withTransaction(async () => {
+          const video = (
+            await UserVideo.create(
+              [
+                {
+                  title,
+                  description,
+                  file_url: userVideo[0].path,
+                  thumbnail_url: thumbnail[0].path,
+                  hashtags: UserVideo.formatHashtags(hashtags),
+                  duration_in_seconds: duration,
+                  owner: _id,
+                },
+              ],
+              { session }
+            )
+          )[0];
+
+          req.session.user = await User.findByIdAndUpdate(
+            _id,
+            {
+              $push: { user_videos: video._id },
+            },
+            { new: true, session }
+          );
+        });
 
         req.flash("success", "비디오 업로드 성공");
         return res.redirect(`/users/${_id}`);
@@ -117,6 +132,8 @@ const userVideoController = (() => {
         fileSystem.fileExistsAndRemove(userVideo[0].path);
         fileSystem.fileExistsAndRemove(thumbnail[0].path);
         return next(error);
+      } finally {
+        await session.endSession();
       }
     },
 
@@ -127,8 +144,10 @@ const userVideoController = (() => {
       } = req;
 
       try {
-        const video = await UserVideo.findById(id)
-          .select("-duration_in_seconds -likes")
+        const video = await UserVideo.findById(
+          id,
+          "-duration_in_seconds -likes"
+        )
           .populate({
             path: "owner",
             select: "nickname avatar_url subscribers",
@@ -225,12 +244,16 @@ const userVideoController = (() => {
             owner: video.owner._id,
             _id: { $ne: id },
           },
-
-          "title thumbnail_url owner views create_at"
-        )
-          .sort({ create_at: -1 })
-          .limit(6)
-          .populate({ path: "owner", select: "nickname" });
+          "title thumbnail_url owner views create_at",
+          {
+            limit: 6,
+            sort: { create_at: -1 },
+            populate: {
+              path: "owner",
+              select: "nickname",
+            },
+          }
+        );
         if (!sideVideos) {
           return next();
         }
@@ -265,7 +288,11 @@ const userVideoController = (() => {
           return res.redirect("/");
         }
 
-        res.render(editTemplate, { pageTitle: editTitle, video });
+        res.render(editTemplate, {
+          pageTitle: editTitle,
+          video,
+          userId: user._id,
+        });
       } catch (error) {
         return next(error);
       }
@@ -323,7 +350,9 @@ const userVideoController = (() => {
 
         req.flash("success", "비디오 수정 성공");
         return res.redirect(`/user-videos/${video._id}`);
-      } catch (error) {}
+      } catch (error) {
+        return next(error);
+      }
     },
   };
   return userVideoController;

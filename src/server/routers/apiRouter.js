@@ -79,7 +79,8 @@ apiRouter
 apiRouter
   .route("/user-videos/:id([0-9a-f]{24})")
   .post(apiController.postPlayUserVideo)
-  .put(apiController.putEndUserVideo);
+  .put(apiController.putEndUserVideo)
+  .delete(apiController.deleteUserVideo);
 
 apiRouter
   .route("/user-videos/:id([0-9a-f]{24})/like")
