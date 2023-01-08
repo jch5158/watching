@@ -4,6 +4,7 @@
 /assets
 /access-log
 /error-log
+/build
 
 # file
 .env

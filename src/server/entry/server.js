@@ -22,9 +22,7 @@ app.set("port", process.env.PORT);
 app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/client/views");
 
-if (process.env.SERVER_ENV === "dev") {
-  app.use(morgan("dev"));
-} else {
+if (process.env.SERVER_ENV === "production") {
   const accessLogStream = (() => {
     const folderPath = `${process.cwd()}/access-log`;
     fileSystem.folderExistsAndCreateSync(folderPath);
@@ -36,6 +34,8 @@ if (process.env.SERVER_ENV === "dev") {
     );
   })();
   app.use(morgan("combined", { stream: accessLogStream }));
+} else {
+  app.use(morgan("dev"));
 }
 
 app.use("/uploads", express.static("uploads")); // 브라우저가 upload 폴더에 접근할 수 있도록 등록

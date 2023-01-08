@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "node.js web server portfolio",
   "scripts": {
+    "start": "node ./build/entry/init.js",
+    "build": "npm run build:server && npm run build:assets",
+    "build:server": "babel ./src/server -d build",
+    "build:assets": "webpack --mode=production",
     "dev:server": "nodemon",
     "dev:assets": "webpack --mode=development -w"
   },
@@ -32,6 +36,7 @@
     "regenerator-runtime": "^0.13.11"
   },
   "devDependencies": {
+    "@babel/cli": "^7.20.7",
     "@babel/core": "^7.20.5",
     "@babel/node": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
