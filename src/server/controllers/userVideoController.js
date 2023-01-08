@@ -6,6 +6,7 @@ import { getVideoDurationInSeconds } from "get-video-duration";
 import UserVideoComment from "../models/UserVideoComment";
 import mongoose, { mongo } from "mongoose";
 import mongooseQuery from "../modules/mongooseQuery";
+import awsModule from "../modules/awsModule";
 
 const userVideoController = (() => {
   const homeTitle = "Home";
@@ -98,7 +99,7 @@ const userVideoController = (() => {
       let session;
       try {
         session = await mongoose.startSession();
-        const duration = await getVideoDurationInSeconds(userVideo[0].path);
+        const duration = await getVideoDurationInSeconds(userVideo[0].location);
         await session.withTransaction(async () => {
           const video = (
             await UserVideo.create(
@@ -106,8 +107,8 @@ const userVideoController = (() => {
                 {
                   title,
                   description,
-                  file_url: userVideo[0].path,
-                  thumbnail_url: thumbnail[0].path,
+                  file_url: userVideo[0].location,
+                  thumbnail_url: thumbnail[0].location,
                   hashtags: UserVideo.formatHashtags(hashtags),
                   duration_in_seconds: duration,
                   owner: _id,
@@ -129,8 +130,10 @@ const userVideoController = (() => {
         req.flash("success", "비디오 업로드 성공");
         return res.redirect(`/users/${_id}`);
       } catch (error) {
-        fileSystem.fileExistsAndRemove(userVideo[0].path);
-        fileSystem.fileExistsAndRemove(thumbnail[0].path);
+        const videoIdx = userVideo[0].location.indexOf("videos");
+        const thumbnailIdx = thumbnail[0].location.indexOf("videos");
+        awsModule.deleteFile(userVideo[0].location.substring(videoIdx));
+        awsModule.deleteFile(thumbnail[0].location.substring(thumbnailIdx));
         return next(error);
       } finally {
         await session.endSession();
@@ -326,16 +329,18 @@ const userVideoController = (() => {
 
         let updateVideo;
         if (videoExists) {
-          updateVideo = userVideo[0].path;
-          fileSystem.fileExistsAndRemove(video.file_url);
+          updateVideo = userVideo[0].location;
+          const idx = video.file_url.indexOf("videos");
+          awsModule.deleteFile(video.file_url.substring(idx));
         } else {
           updateVideo = video.file_url;
         }
 
         let updateThumbnail;
         if (thumbnailExists) {
-          updateThumbnail = thumbnail[0].path;
-          fileSystem.fileExistsAndRemove(video.thumbnail_url);
+          updateThumbnail = thumbnail[0].location;
+          const idx = video.thumbnail_url.indexOf("videos");
+          awsModule.deleteFile(video.thumbnail_url.substring(idx));
         } else {
           updateThumbnail = video.thumbnail_url;
         }

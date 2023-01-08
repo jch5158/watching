@@ -148,15 +148,21 @@
       margin-top: 20px;
       display: flex;
       align-items: center;
-      .user-video-comments__avatar {
-        width: 55px;
-        height: 55px;
-        border-radius: 50%;
-      }
 
-      .user-video-comments__nickname {
-        font-size: 18px;
-        margin-left: 10px;
+      > a {
+        display: flex;
+        align-items: center;
+
+        .user-video-comments__avatar {
+          width: 55px;
+          height: 55px;
+          border-radius: 50%;
+        }
+
+        .user-video-comments__nickname {
+          font-size: 18px;
+          margin-left: 10px;
+        }
       }
     }
 

@@ -1,7 +1,21 @@
 import multer from "multer";
+import multerS3 from "multer-s3";
+import awsModule from "./awsModule";
 import { validationResult } from "express-validator";
 import fileSystem from "./fileSystem";
 import { getLogFileNameFormat, getDateFormat } from "../modules/common";
+
+const multerS3AvatarUploder = multerS3({
+  s3: awsModule.s3,
+  bucket: "devhun-watching/avatars",
+  acl: "public-read",
+});
+
+const multerS3VideoUploder = multerS3({
+  s3: awsModule.s3,
+  bucket: "devhun-watching/videos",
+  acl: "public-read",
+});
 
 const middlewares = (function () {
   const middlewares = {
@@ -33,10 +47,10 @@ const middlewares = (function () {
     },
 
     uploadAvatarMiddleware: multer({
-      dest: "uploads/avatars",
       limits: {
         fileSize: 1024 * 1024 * 5, // 5MB
       },
+      storage: multerS3AvatarUploder,
       fileFilter: (req, file, cb) => {
         if (
           file.mimetype === "image/jpg" ||
@@ -56,6 +70,7 @@ const middlewares = (function () {
       limits: {
         fieldSize: 1024 * 1024 * 10,
       },
+      storage: multerS3VideoUploder,
       fileFilter: (req, file, cb) => {
         if (file.fieldname === "userVideo") {
           if (file.mimetype.startsWith("vide")) {

@@ -8,7 +8,7 @@ block contents
     div.watch-user-video(data-id=loggedInUser ? loggedInUser._id : "")
         div 
             div(data-id=video._id).watch-user-video__container
-                video(src=`/${video.file_url}`, controls="controls").watch-user-video__video
+                video(src=video.file_url, controls="controls").watch-user-video__video
         div.watch-user-video__side-video-container
             each sideVideo in sideVideos
                 +side-user-video(sideVideo)
@@ -17,10 +17,7 @@ block contents
         div(data-id=video.owner._id).watch-user-video__user-info
             div
                 a(href=`/users/${video.owner._id}`)
-                    if video.owner.avatar_url.startsWith("http") 
-                        img(src=video.owner.avatar_url).watch-user-video__avatar
-                    else 
-                        img(src=`/${video.owner.avatar_url}`).watch-user-video__avatar
+                    img(src=video.owner.avatar_url).watch-user-video__avatar
                 div.watch-user-video__owner-info
                     a(href=`/users/${video.owner._id}`) 
                         span=video.owner.nickname
@@ -65,11 +62,9 @@ block contents
         if isLoggedIn
             div(data-id=loggedInUser._id).user-video-comments__comment-box
                 div
-                    if loggedInUser.avatar_url.startsWith("http")
+                    a(href=`/users/${loggedInUser._id}`) 
                         img(src=loggedInUser.avatar_url).user-video-comments__avatar
-                    else 
-                        img(src=`/${loggedInUser.avatar_url}`).user-video-comments__avatar
-                    span.user-video-comments__nickname #{loggedInUser.nickname}
+                        span.user-video-comments__nickname #{loggedInUser.nickname}
                 div 
                     input(type="text", placeholder="댓글 추가...", maxLength="150").user-video-comments__input
                     button.user-video-comments__input-btn 댓글

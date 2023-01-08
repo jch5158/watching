@@ -7,10 +7,7 @@ block headers
 block contents
     div(data-id=user._id).profile-header
         div.profile-header__info-container
-            if user.avatar_url.startsWith("http")
-                img(src=user.avatar_url).profile-header__avatar
-            else 
-                img(src=`/${user.avatar_url}`).profile-header__avatar
+            img(src=user.avatar_url).profile-header__avatar
             div.profile-header__info
                 span=user.nickname
                 span #{subscriberCount} 명

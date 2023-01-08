@@ -1,10 +1,7 @@
 mixin user-video(video)
     div.user-video-mixin
         a(href=`/user-videos/${video._id}`)
-            if video.thumbnail_url.startsWith("http")
-                img(src=video.thumbnail_url).user-video-mixin__thumb
-            else 
-                img(src=`/${video.thumbnail_url}`).user-video-mixin__thumb
+            img(src=video.thumbnail_url).user-video-mixin__thumb
         div.user-video-mixin__meta
             div
                 a(href=`/users/${video.owner._id}`)

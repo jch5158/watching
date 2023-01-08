@@ -10,6 +10,7 @@ import UserVideoSubComment from "../models/UserVideoSubComment";
 import mongooseQuery from "../modules/mongooseQuery";
 import fileSystem from "../modules/fileSystem";
 import mongoose from "mongoose";
+import awsModule from "../modules/awsModule";
 
 const apiController = (function () {
   const apiController = {
@@ -376,9 +377,11 @@ const apiController = (function () {
           return res.sendStatus(400);
         }
 
+        const videoIdx = video.file_url.indexOf("videos");
+        const thumbnailIdx = video.thumbnail_url.indexOf("videos");
         await Promise.all([
-          fileSystem.fileExistsAndRemove(video.file_url),
-          fileSystem.fileExistsAndRemove(video.thumbnail_url),
+          awsModule.deleteFile(video.file_url.substring(videoIdx)),
+          awsModule.deleteFile(video.thumbnail_url.substring(thumbnailIdx)),
         ]);
 
         await session.withTransaction(async () => {

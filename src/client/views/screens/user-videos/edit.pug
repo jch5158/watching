@@ -6,10 +6,7 @@ block contents
     span.title Edit Video
     form(method="POST", id="video-form", enctype="multipart/form-data", data-id=video._id, data-user_id=userId).video-form
         div.video-form__container
-            if video.thumbnail_url.startsWith("http")
-                img(src=`${video.thumbnail_url}`).video-form__thumbnail
-            else
-                img(src=`/${video.thumbnail_url}`).video-form__thumbnail
+            img(src=video.thumbnail_url).video-form__thumbnail
             span.video-form__video-name
             input(type="file", id="userVideo", name="userVideo", accept="video/*").video-form__video.display-none
             input(type="file", id="thumbnail", name="thumbnail", accept="image/jpg, image/jpeg, image/png").video-form__video-thumbnail.display-none

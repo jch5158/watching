@@ -7,10 +7,7 @@ block contents
     form(method="POST", action=`/users/profile/edit` enctype="multipart/form-data").user-form
         div.avatar-upload 
             label(for="avatar").avatar-upload__label 대표 이미지
-            if loggedInUser.avatar_url.startsWith("http")
-                img(src=`${loggedInUser.avatar_url}`).avatar-upload__avatar
-            else 
-                img(src=`/${loggedInUser.avatar_url}`).avatar-upload__avatar
+            img(src=`${loggedInUser.avatar_url}`).avatar-upload__avatar
             input(type="file", id="avatar", name="avatar", accept="image/jpg, image/jpeg, image/png").avatar-upload__input.display-none
         input(name="newNickname", placeholder="닉네임", type="text", minlength="2", maxlength="15", value=loggedInUser.nickname, required).user-form__nickname
         button(type="button").user-form__confirm-nickname 닉네임 중복확인

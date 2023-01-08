@@ -8,6 +8,7 @@ import Subscriber from "../models/Subscriber";
 import SubscribeUser from "../models/SubscribeUser";
 import mongoose, { mongo } from "mongoose";
 import UserVideo from "../models/UserVideo";
+import awsModule from "../modules/awsModule";
 
 const userController = (() => {
   const loginTitle = "Login";
@@ -49,7 +50,7 @@ const userController = (() => {
           authenticode,
           token,
         },
-        file: { path },
+        file: { location },
       } = req;
 
       if (password !== password_confirm) {
@@ -115,7 +116,7 @@ const userController = (() => {
                       email,
                       nickname,
                       password,
-                      avatar_url: path,
+                      avatar_url: location,
                     },
                   ],
                   { session }
@@ -619,9 +620,10 @@ const userController = (() => {
           }
         }
 
-        const path = file?.path;
-        if (path && !avatar_url.startsWith("http")) {
-          fileSystem.fileExistsAndRemove(avatar_url);
+        const path = file?.location;
+        const idx = avatar_url.indexOf("avatars");
+        if (path && idx) {
+          awsModule.deleteFile(avatar_url.substring(idx));
         }
 
         req.session.user = await User.findByIdAndUpdate(
