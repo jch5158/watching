@@ -34,16 +34,17 @@ const middlewares = (function () {
     },
 
     async error500Middleware(err, req, res, next) {
-      await fileSystem.appendFile(
-        `${process.cwd()}/error-log/${getLogFileNameFormat(new Date())}.log`,
-        `[${getDateFormat(new Date())}] ${err.stack}`
-      );
-      res.status(500);
-      return res.render("screens/root/error", {
-        pageTitle: 500,
-        status: 500,
-        message: "일시적으로 서버의 문제가 발생되었습니다.",
-      });
+      res.send(err);
+      // await fileSystem.appendFile(
+      //   `${process.cwd()}/error-log/${getLogFileNameFormat(new Date())}.log`,
+      //   `[${getDateFormat(new Date())}] ${err.stack}`
+      // );
+      // res.status(500);
+      // return res.render("screens/root/error", {
+      //   pageTitle: 500,
+      //   status: 500,
+      //   message: "일시적으로 서버의 문제가 발생되었습니다.",
+      // });
     },
 
     uploadAvatarMiddleware: multer({
