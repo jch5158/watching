@@ -48,7 +48,6 @@ const sideVideoContainer = document.querySelector(
 );
 
 const makeComment = (commentInfo) => {
-  console.log(commentInfo);
   const commentDiv = document.createElement("div");
   commentDiv.classList.add("user-video-comment");
   const avatarLink = document.createElement("a");
@@ -291,12 +290,14 @@ const scrollAddComment = (comment, isLiked, likeCount, subCommentCount) => {
   subContainerDiv.appendChild(tagSpan);
   subContainerDiv.appendChild(addSubDiv);
 
-  likeBtn.appendChild(likeI);
-  likeBtn.appendChild(likeCntSpan);
-  stateBtnsDiv.appendChild(likeBtn);
-  stateBtnsDiv.appendChild(answerBtn);
-  stateBtnsDiv.appendChild(updateBtn);
-  stateBtnsDiv.appendChild(deleteBtn);
+  if (userIdDiv.dataset._id === comment.owner._id) {
+    likeBtn.appendChild(likeI);
+    likeBtn.appendChild(likeCntSpan);
+    stateBtnsDiv.appendChild(likeBtn);
+    stateBtnsDiv.appendChild(answerBtn);
+    stateBtnsDiv.appendChild(updateBtn);
+    stateBtnsDiv.appendChild(deleteBtn);
+  }
 
   updateDiv.appendChild(updateInput);
   updateDiv.appendChild(updateSaveBtn);
@@ -304,7 +305,10 @@ const scrollAddComment = (comment, isLiked, likeCount, subCommentCount) => {
   containerDiv.appendChild(nicknameSpan);
   containerDiv.appendChild(textSpan);
   containerDiv.appendChild(updateDiv);
-  containerDiv.appendChild(stateBtnsDiv);
+
+  if (userIdDiv.dataset._id === comment.owner._id) {
+    containerDiv.appendChild(stateBtnsDiv);
+  }
   containerDiv.appendChild(subContainerDiv);
   containerDiv.appendChild(subDiv);
 
