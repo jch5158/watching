@@ -8,7 +8,7 @@ block contents
     div.watch-user-video(data-id=loggedInUser ? loggedInUser._id : "")
         div 
             div(data-id=video._id).watch-user-video__container
-                video(src=video.file_url, controls="controls").watch-user-video__video
+                video(src=video.file_url, controls, muted).watch-user-video__video
         div.watch-user-video__side-video-container
             each sideVideo in sideVideos
                 +side-user-video(sideVideo)
