@@ -34,6 +34,7 @@ const middlewares = (function () {
     },
 
     async error500Middleware(err, req, res, next) {
+      console.log(err);
       res.send(err);
       // await fileSystem.appendFile(
       //   `${process.cwd()}/error-log/${getLogFileNameFormat(new Date())}.log`,
