@@ -81,7 +81,7 @@ const userVideoController = (() => {
         session: {
           user: { _id },
         },
-        body: { title, description, hashtags },
+        body: { title, description, duration, hashtags },
         files,
       } = req;
 
@@ -95,51 +95,47 @@ const userVideoController = (() => {
       }
       const { userVideo, thumbnail } = files;
 
-      getVideoDurationInSeconds(userVideo[0].location).then(
-        async (duration) => {
-          let session;
-          try {
-            session = await mongoose.startSession();
-            await session.withTransaction(async () => {
-              const video = (
-                await UserVideo.create(
-                  [
-                    {
-                      title,
-                      description,
-                      file_url: userVideo[0].location,
-                      thumbnail_url: thumbnail[0].location,
-                      hashtags: UserVideo.formatHashtags(hashtags),
-                      duration_in_seconds: duration,
-                      owner: _id,
-                    },
-                  ],
-                  { session }
-                )
-              )[0];
-
-              req.session.user = await User.findByIdAndUpdate(
-                _id,
+      let session;
+      try {
+        session = await mongoose.startSession();
+        await session.withTransaction(async () => {
+          const video = (
+            await UserVideo.create(
+              [
                 {
-                  $push: { user_videos: video._id },
+                  title,
+                  description,
+                  file_url: userVideo[0].location,
+                  thumbnail_url: thumbnail[0].location,
+                  hashtags: UserVideo.formatHashtags(hashtags),
+                  duration_in_seconds: duration,
+                  owner: _id,
                 },
-                { new: true, session }
-              );
-            });
+              ],
+              { session }
+            )
+          )[0];
 
-            req.flash("success", "비디오 업로드 성공");
-            return res.redirect(`/users/${_id}`);
-          } catch (error) {
-            const videoIdx = userVideo[0].location.indexOf("videos");
-            const thumbnailIdx = thumbnail[0].location.indexOf("videos");
-            awsModule.deleteFile(userVideo[0].location.substring(videoIdx));
-            awsModule.deleteFile(thumbnail[0].location.substring(thumbnailIdx));
-            return next(error);
-          } finally {
-            await session.endSession();
-          }
-        }
-      );
+          req.session.user = await User.findByIdAndUpdate(
+            _id,
+            {
+              $push: { user_videos: video._id },
+            },
+            { new: true, session }
+          );
+        });
+
+        req.flash("success", "비디오 업로드 성공");
+        return res.redirect(`/users/${_id}`);
+      } catch (error) {
+        const videoIdx = userVideo[0].location.indexOf("videos");
+        const thumbnailIdx = thumbnail[0].location.indexOf("videos");
+        awsModule.deleteFile(userVideo[0].location.substring(videoIdx));
+        awsModule.deleteFile(thumbnail[0].location.substring(thumbnailIdx));
+        return next(error);
+      } finally {
+        await session.endSession();
+      }
     },
 
     async getWatchVideo(req, res, next) {

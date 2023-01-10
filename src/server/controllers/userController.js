@@ -6,7 +6,7 @@ import githubLogin from "../modules/githubLogin";
 import fileSystem from "../modules/fileSystem";
 import Subscriber from "../models/Subscriber";
 import SubscribeUser from "../models/SubscribeUser";
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import UserVideo from "../models/UserVideo";
 import awsModule from "../modules/awsModule";
 
