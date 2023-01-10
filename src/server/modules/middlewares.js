@@ -15,6 +15,7 @@ const multerS3VideoUploder = multerS3({
   s3: awsModule.s3,
   bucket: "devhun-watching/videos",
   acl: "public-read",
+  contentType: multerS3.AUTO_CONTENT_TYPE,
 });
 
 const middlewares = (function () {
