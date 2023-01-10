@@ -99,7 +99,7 @@ const userVideoController = (() => {
       let session;
       try {
         session = await mongoose.startSession();
-        const duration = await getVideoDurationInSeconds(userVideo[0].location);
+        const duration = 10;
         console.log(duration);
         await session.withTransaction(async () => {
           const video = (
