@@ -528,9 +528,7 @@ const userController = (() => {
     async getProfile(req, res, next) {
       const {
         params: { id },
-        session: {
-          user: { _id },
-        },
+        session: { user },
       } = req;
 
       try {
@@ -577,12 +575,15 @@ const userController = (() => {
           ])
         )[0].length;
 
-        const isSubscribed = (await Subscriber.exists({
-          owner: id,
-          users: _id,
-        }))
-          ? true
-          : false;
+        let isSubscribed;
+        if (user) {
+          isSubscribed = (await Subscriber.exists({
+            owner: id,
+            users: user._id,
+          }))
+            ? true
+            : false;
+        }
 
         return res.render(profileTemplate, {
           pageTitle: profileTitle,
