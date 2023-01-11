@@ -307,7 +307,7 @@ const userVideoController = (() => {
         session: {
           user: { _id },
         },
-        body: { title, description, hashtags },
+        body: { title, description, duration, hashtags },
         files,
       } = req;
 
@@ -346,6 +346,7 @@ const userVideoController = (() => {
         await UserVideo.findByIdAndUpdate(id, {
           title,
           description,
+          duration_in_seconds: duration,
           hashtags: UserVideo.formatHashtags(hashtags),
           file_url: updateVideo,
           thumbnail_url: updateThumbnail,

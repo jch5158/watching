@@ -14,9 +14,22 @@ const hashtagsResultSpan = document.querySelector(
 const videoForm = document.querySelector(".video-form");
 const deleteBtn = document.querySelector(".user-video-edit__delete-btn");
 
+const videoDuration = document.querySelector(".video-form__video-duration");
+
 changeVideoHandler = (event) => {
-  const { name } = event.target.files[0];
+  const file = event.target.files[0];
+  const { name } = file;
   videoNameSpan.innerText = name;
+
+  var fileReader = new FileReader();
+  fileReader.onload = function (e) {
+    var video = document.createElement("video");
+    video.src = e.target.result;
+    video.onloadedmetadata = function () {
+      videoDuration.value = video.duration;
+    };
+  };
+  fileReader.readAsDataURL(file);
 };
 
 changeThumbnailHandler = (() => {

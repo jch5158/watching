@@ -32,6 +32,7 @@ videoRouter
     [
       body("title").exists().trim().isLength({ min: 1, max: 50 }),
       body("description").trim().isLength({ min: 1, max: 400 }),
+      body("duration").exists().isNumeric({ min: 1 }),
       body("hashtags").trim().isLength({ max: 95 }),
       middlewares.validateMiddleware,
     ],

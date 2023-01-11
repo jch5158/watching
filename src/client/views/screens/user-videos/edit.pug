@@ -18,6 +18,7 @@ block contents
         span.video-form__hashtags-guide , 로 구분하여 입력
         input(type="text", name="hashtags" placeholder="Hashtags (최대 5개 등록 가능합니다.)", maxLength="90", value=video.hashtags.map((word) => (word.startsWith("#") ? word.substring(1) : word)).join()).video-form__hashtags
         span.vidoe-form__hashtags-result #{video.hashtags.join()}
+        input(type="text", name="duration", value=video.duration_in_seconds).video-form__video-duration.display-none
         input(type="submit", value="Edit")
     div.user-video-edit__delete-div
         button.user-video-edit__delete-btn delete
