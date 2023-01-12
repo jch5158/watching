@@ -5,7 +5,7 @@ include ../../mixins/user-video-comment
 block headers
     include ../../partials/nav-header
 block contents 
-    div.watch-user-video(data-id=loggedInUser ? loggedInUser._id : "")
+    div.watch-user-video(data-id=isLoggedIn ? loggedInUser._id : "")
         div 
             div(data-id=video._id).watch-user-video__container
                 video(src=video.file_url, playsinline, controls).watch-user-video__video

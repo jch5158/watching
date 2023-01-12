@@ -296,7 +296,7 @@ const scrollAddComment = (comment, isLiked, likeCount, subCommentCount) => {
     stateBtnsDiv.appendChild(likeBtn);
   }
 
-  if (userIdDiv.dataset._id === comment.owner._id) {
+  if (userIdDiv.dataset.id === comment.owner._id) {
     stateBtnsDiv.appendChild(answerBtn);
     stateBtnsDiv.appendChild(updateBtn);
     stateBtnsDiv.appendChild(deleteBtn);
