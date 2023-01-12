@@ -48,11 +48,15 @@
   }
 }
 
+.user-subscriber__text,
+.user-subscriber {
+  width: 1200px;
+}
+
 .user-subscriber__text {
   margin: 0 auto;
   margin-top: 50px;
   margin-bottom: 15px;
-  width: 80%;
   > span {
     font-size: 20px;
     font-weight: 600;
@@ -67,7 +71,6 @@
   border-radius: 10px;
   overflow: auto;
   white-space: nowrap;
-  width: 80%;
   height: 165px;
 }
 
