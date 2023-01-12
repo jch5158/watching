@@ -169,7 +169,10 @@ const userController = (() => {
       } = req;
 
       try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne(
+          { email },
+          "-user_videos -user_video_comments -user_video_sub_comments"
+        );
         if (!user) {
           req.flash("warning", "일치하는 회원 정보가 없습니다.");
           return res
@@ -281,10 +284,16 @@ const userController = (() => {
         }
 
         let isOverlapNickname = false;
-        let user = await User.findOne({ email: kakao_account.email });
+        let user = await User.findOne(
+          { email: kakao_account.email },
+          "-user_videos -user_video_comments -user_video_sub_comments"
+        );
         if (!user) {
           let nickname = "";
-          user = await User.findOne({ nickname: profile.nickname });
+          user = await User.findOne(
+            { nickname: profile.nickname },
+            "-user_videos -user_video_comments -user_video_sub_comments"
+          );
           if (!user) {
             nickname = profile.nickname;
           } else {
@@ -415,10 +424,16 @@ const userController = (() => {
         }
 
         let isOverlapNickname = false;
-        let user = await User.findOne({ email: emailObj.email });
+        let user = await User.findOne(
+          { email: emailObj.email },
+          "-user_videos -user_video_comments -user_video_sub_comments"
+        );
         if (!user) {
           let nickname = "";
-          user = await User.findOne({ nickname: userData.login });
+          user = await User.findOne(
+            { nickname: userData.login },
+            "-user_videos -user_video_comments -user_video_sub_comments"
+          );
           if (!user) {
             nickname = userData.login;
           } else {
@@ -532,7 +547,7 @@ const userController = (() => {
       } = req;
 
       try {
-        const user = await User.findById(
+        const dbUser = await User.findById(
           id,
           "nickname avatar_url subscribers",
           {
@@ -546,7 +561,7 @@ const userController = (() => {
           }
         );
 
-        if (!user) {
+        if (!dbUser) {
           return next();
         }
 
@@ -587,7 +602,7 @@ const userController = (() => {
 
         return res.render(profileTemplate, {
           pageTitle: profileTitle,
-          user,
+          user: dbUser,
           subscriberCount,
           isSubscribed,
           videos,
@@ -633,9 +648,12 @@ const userController = (() => {
             nickname: nickname === newNickname ? nickname : newNickname,
             avatar_url: path ? path : avatar_url,
           },
-          { new: true }
+          {
+            new: true,
+            select:
+              "-user_videos -user_video_comments -user_video_sub_comments ",
+          }
         );
-
         req.flash("success", "회원정보 수정 완료");
         return res.redirect("/");
       } catch (error) {

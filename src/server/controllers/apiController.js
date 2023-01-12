@@ -185,7 +185,11 @@ const apiController = (function () {
         req.session.user = await User.findByIdAndUpdate(
           _id,
           { nickname },
-          { new: true }
+          {
+            new: true,
+            select:
+              "-user_videos -user_video_comments -user_video_sub_comments",
+          }
         );
         return res.sendStatus(200);
       } catch (error) {
