@@ -290,10 +290,13 @@ const scrollAddComment = (comment, isLiked, likeCount, subCommentCount) => {
   subContainerDiv.appendChild(tagSpan);
   subContainerDiv.appendChild(addSubDiv);
 
-  if (userIdDiv.dataset._id === comment.owner._id) {
+  if (userIdDiv.dataset.id) {
     likeBtn.appendChild(likeI);
     likeBtn.appendChild(likeCntSpan);
     stateBtnsDiv.appendChild(likeBtn);
+  }
+
+  if (userIdDiv.dataset._id === comment.owner._id) {
     stateBtnsDiv.appendChild(answerBtn);
     stateBtnsDiv.appendChild(updateBtn);
     stateBtnsDiv.appendChild(deleteBtn);
@@ -306,9 +309,8 @@ const scrollAddComment = (comment, isLiked, likeCount, subCommentCount) => {
   containerDiv.appendChild(textSpan);
   containerDiv.appendChild(updateDiv);
 
-  if (userIdDiv.dataset._id === comment.owner._id) {
-    containerDiv.appendChild(stateBtnsDiv);
-  }
+  containerDiv.appendChild(stateBtnsDiv);
+
   containerDiv.appendChild(subContainerDiv);
   containerDiv.appendChild(subDiv);
 
