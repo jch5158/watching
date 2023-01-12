@@ -555,6 +555,7 @@ const userController = (() => {
               path: "subscribers",
               populate: {
                 path: "users",
+                limit: 11,
                 select: "nickname avatar_url",
               },
             },
