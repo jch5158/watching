@@ -7,6 +7,8 @@ const subscribeUserSchema = mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
+subscribeUserSchema.index({ owner: 1 });
+
 const SubscribeUser = mongoose.model("Subscribe_User", subscribeUserSchema);
 
 export default SubscribeUser;

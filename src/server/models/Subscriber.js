@@ -5,5 +5,7 @@ const subscriberSchema = mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
+subscriberSchema.index({ owner: 1 });
+
 const Subscriber = mongoose.model("Subscriber", subscriberSchema);
 export default Subscriber;

@@ -32,5 +32,8 @@ userVideoSchema.static("formatHashtags", (hashtags) => {
   ];
 });
 
+userVideoSchema.index({ title: 1 });
+userVideoSchema.index({ hashtags: 1 });
+
 const UserVideo = mongoose.model("User_Video", userVideoSchema);
 export default UserVideo;

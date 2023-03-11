@@ -13,8 +13,11 @@ const userVideoSubCommentSchema = mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
+userVideoSubCommentSchema.index({ owner: 1 });
+
 const UserVideoSubComment = mongoose.model(
   "User_Video_Sub_Comment",
   userVideoSubCommentSchema
 );
+
 export default UserVideoSubComment;

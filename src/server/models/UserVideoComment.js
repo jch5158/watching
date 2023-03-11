@@ -15,8 +15,11 @@ const userVideoCommentSchema = mongoose.Schema({
   },
 });
 
+userVideoCommentSchema.index({ owner: 1 });
+
 const UserVideoComment = mongoose.model(
   "User_Video_Comment",
   userVideoCommentSchema
 );
+
 export default UserVideoComment;
