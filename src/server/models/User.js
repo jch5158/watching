@@ -18,5 +18,8 @@ userSchema.pre("save", async function () {
   }
 });
 
+userSchema.index({ email: "text" }, { default_language: "none" });
+userSchema.index({ nickname: "text" }, { default_language: "none" });
+
 const User = mongoose.model("User", userSchema);
 export default User;
