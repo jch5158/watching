@@ -123,7 +123,7 @@ const userController = (() => {
                 )
               )[0];
 
-              const [subscribers, subscribeUsers] = await Promise.all([
+              await Promise.all([
                 Subscriber.create(
                   [
                     {
@@ -141,10 +141,6 @@ const userController = (() => {
                   { session }
                 ),
               ]);
-
-              user.subscribers = subscribers[0]._id;
-              user.subscribe_users = subscribeUsers[0]._id;
-              await user.save();
             });
 
             req.flash("success", joingSuccess);
@@ -317,7 +313,7 @@ const userController = (() => {
               )
             )[0];
 
-            const [subscribers, subscribeUsers] = await Promise.all([
+            await Promise.all([
               Subscriber.create(
                 [
                   {
@@ -335,10 +331,6 @@ const userController = (() => {
                 { session }
               ),
             ]);
-
-            user.subscribers = subscribers[0]._id;
-            user.subscribe_users = subscribeUsers[0]._id;
-            await user.save();
           });
         }
 
@@ -457,7 +449,7 @@ const userController = (() => {
               )
             )[0];
 
-            const [subscribers, subscribeUsers] = await Promise.all([
+            await Promise.all([
               Subscriber.create(
                 [
                   {
@@ -475,10 +467,6 @@ const userController = (() => {
                 { session }
               ),
             ]);
-
-            user.subscribers = subscribers[0]._id;
-            user.subscribe_users = subscribeUsers[0]._id;
-            await user.save();
           });
         }
 
@@ -547,21 +535,22 @@ const userController = (() => {
       } = req;
 
       try {
-        const dbUser = await User.findById(
-          id,
-          "nickname avatar_url subscribers",
-          {
-            populate: {
-              path: "subscribers",
-              populate: {
-                path: "users",
-                limit: 11,
-                select: "nickname avatar_url",
-              },
-            },
-          }
-        );
+        // const dbUser = await User.findById(
+        //   id,
+        //   "nickname avatar_url subscribers",
+        //   {
+        //     populate: {
+        //       path: "subscribers",
+        //       populate: {
+        //         path: "users",
+        //         limit: 11,
+        //         select: "nickname avatar_url",
+        //       },
+        //     },
+        //   }
+        // );
 
+        const dbUser = await User.findById(id, "nickname avatar_url");
         if (!dbUser) {
           return next();
         }
@@ -578,18 +567,16 @@ const userController = (() => {
           }
         );
 
-        const subscriberCount = (
-          await Subscriber.aggregate([
-            {
-              $match: {
-                owner: mongoose.Types.ObjectId(id),
-              },
+        const { users: subscribers } = await Subscriber.findOne(
+          { owner: id },
+          "users",
+          {
+            populate: {
+              path: "users",
+              select: "nickname avatar_url",
             },
-            {
-              $project: { length: { $size: "$users" } },
-            },
-          ])
-        )[0].length;
+          }
+        );
 
         let isSubscribed;
         if (user) {
@@ -604,7 +591,7 @@ const userController = (() => {
         return res.render(profileTemplate, {
           pageTitle: profileTitle,
           user: dbUser,
-          subscriberCount,
+          subscribers,
           isSubscribed,
           videos,
         });
@@ -651,8 +638,6 @@ const userController = (() => {
           },
           {
             new: true,
-            select:
-              "-user_videos -user_video_comments -user_video_sub_comments ",
           }
         );
         req.flash("success", "회원정보 수정 완료");

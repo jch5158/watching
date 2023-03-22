@@ -10,12 +10,6 @@ const userVideoSchema = mongoose.Schema({
   views: { type: Number, required: true, default: 0 },
   create_at: { type: Date, required: true, default: Date.now },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  comments: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User_Video_Comment",
-    },
-  ],
   owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
@@ -32,9 +26,9 @@ userVideoSchema.static("formatHashtags", (hashtags) => {
   ];
 });
 
-userVideoSchema.index({ title: 1 });
-userVideoSchema.index({ hashtags: 1 });
-userVideoSchema.index({ owner: 1 });
+userVideoSchema.index({ title: "text" }, { default_language: "none" });
+userVideoSchema.index({ hashtags: "text" }, { default_language: "none" });
+userVideoSchema.index({ owner: "hashed" });
 
 const UserVideo = mongoose.model("User_Video", userVideoSchema);
 export default UserVideo;

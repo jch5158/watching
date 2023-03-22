@@ -10,7 +10,7 @@ block contents
             img(src=user.avatar_url).profile-header__avatar
             div.profile-header__info
                 span=user.nickname
-                span #{subscriberCount} 명
+                span #{subscribers.length} 명
         if isLoggedIn && String(loggedInUser._id) !== String(user._id)
             if isSubscribed
                 button(data-id=user._id).profile-header__subscribe-btn.clicked 구독중
@@ -19,7 +19,7 @@ block contents
     div.user-subscriber__text
         span 구독자
     div.user-subscriber
-        each subscriber in user.subscribers.users
+        each subscriber in subscribers
             +subscriber-vertical(subscriber)
     div.user-video-container 
         div.user-video-grid

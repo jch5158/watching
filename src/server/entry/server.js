@@ -53,7 +53,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: false,
       maxAge: 1296000000,
     },
     store: new RedisStore({

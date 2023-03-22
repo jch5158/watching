@@ -13,7 +13,8 @@ const userVideoSubCommentSchema = mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
-userVideoSubCommentSchema.index({ owner: 1 });
+userVideoSubCommentSchema.index({ owner: "hashed" });
+userVideoSubCommentSchema.index({ comment: "1", create_at: "1" });
 
 const UserVideoSubComment = mongoose.model(
   "User_Video_Sub_Comment",
